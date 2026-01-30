@@ -1,0 +1,65 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "email": "admin@blog.com",
+      "password": "123",
+      "name": "Professor Admin",
+      "role": "professor"
+    },
+    {
+      "id": 2,
+      "email": "student@blog.com",
+      "password": "123",
+      "name": "Aluno Exemplo",
+      "role": "aluno"
+    },
+    {
+      "id": 3,
+      "email": "student2@blog.com",
+      "password": "123",
+      "name": "Aluno Teste",
+      "role": "aluno"
+    },
+    {
+      "name": "Jurandir",
+      "email": "jurandir@blog.com",
+      "password": "Jurandir",
+      "role": "aluno",
+      "id": 4
+    },
+    {
+      "name": "Kakashi",
+      "email": "kakashi@blog.com",
+      "password": "kakashi",
+      "role": "professor",
+      "id": 5
+    }
+  ],
+  "posts": [
+    {
+      "id": 1,
+      "title": "Bem-vindo ao Blog School",
+      "description": "Este é o primeiro post do blog. Aqui você encontrará conteúdos educacionais.",
+      "content": "Conteúdo completo do post de boas-vindas. Lorem ipsum dolor sit amet...",
+      "author": "Professor Admin",
+      "createdAt": "2024-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "title": "Dicas de Estudo",
+      "description": "Confira 5 dicas para melhorar seu desempenho nos estudos.",
+      "content": "1. Organize seu tempo. 2. Faça resumos. 3. ...",
+      "author": "Professor Admin",
+      "createdAt": "2024-01-02T14:30:00.000Z"
+    },
+    {
+      "title": "Regra de três simples ",
+      "description": "Resume o que faz a regra de três ",
+      "content": "Regra de três resolve tudo hoje em dia",
+      "author": "Professor Admin",
+      "createdAt": "2026-01-30T19:09:45.986Z",
+      "id": 3
+    }
+  ]
+}
