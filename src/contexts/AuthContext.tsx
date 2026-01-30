@@ -1,11 +1,16 @@
-import { createContext, useState, useEffect, useContext } from 'react';
+import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from '../services/api';
+import { User, AuthContextData } from '../types';
 
-const AuthContext = createContext({});
+interface AuthProviderProps {
+  children: ReactNode;
+}
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+const AuthContext = createContext<AuthContextData>({} as AuthContextData);
+
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -28,7 +33,7 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  async function signIn(email, password) {
+  async function signIn(email: string, password: string): Promise<string | null> {
     try {
       const response = await api.post('/login', { email, password });
       const { user, token } = response.data;
@@ -41,7 +46,7 @@ export const AuthProvider = ({ children }) => {
       await AsyncStorage.setItem('@BlogSchool:token', token);
       
       return null; // No error
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
       return error.response?.data?.message || 'Erro ao realizar login';
     }

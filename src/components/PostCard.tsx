@@ -1,8 +1,17 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { colors, spacing, fontSize } from '../theme';
+import { Post } from '../types';
 
-export default function PostCard({ post, onPress, onEdit, onDelete, canEdit }) {
+interface PostCardProps {
+  post: Post;
+  onPress: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
+  canEdit: boolean;
+}
+
+export default function PostCard({ post, onPress, onEdit, onDelete, canEdit }: PostCardProps) {
   return (
     <View style={styles.card}>
       <TouchableOpacity onPress={onPress}>

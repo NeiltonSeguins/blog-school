@@ -7,7 +7,6 @@ import { colors } from '../theme';
 
 // Screens
 import LoginScreen from '../screens/Auth/LoginScreen';
-// Placeholders (will be replaced by actual screens later)
 import PostsListScreen from '../screens/Posts/PostsListScreen';
 import TeachersListScreen from '../screens/Admin/TeachersListScreen';
 import StudentsListScreen from '../screens/Admin/StudentsListScreen';
@@ -15,15 +14,34 @@ import PostFormScreen from '../screens/Posts/PostFormScreen';
 import PostDetailScreen from '../screens/Posts/PostDetailScreen';
 import UserFormScreen from '../screens/Shared/UserFormScreen';
 
-const Stack = createStackNavigator();
-const Tab = createBottomTabNavigator();
-const PostStack = createStackNavigator();
+// --- Type Definitions ---
+export type RootStackParamList = {
+  Main: undefined;
+  UserForm: { id?: number; userType: 'teacher' | 'student' } | undefined;
+  Login: undefined;
+};
+
+export type PostStackParamList = {
+  PostsList: undefined;
+  PostDetail: { id: number };
+  PostForm: { id?: number };
+};
+
+export type TabParamList = {
+  PostsTab: undefined;
+  Teachers: undefined;
+  Students: undefined;
+};
+
+const Stack = createStackNavigator<RootStackParamList>();
+const Tab = createBottomTabNavigator<TabParamList>();
+const PostStack = createStackNavigator<PostStackParamList>();
 
 // --- Navigators ---
 
 function PostsStackNavigator() {
   return (
-    <PostStack.Navigator screenOptions={{ headerShown: false }}>
+    <PostStack.Navigator id="PostsStack" screenOptions={{ headerShown: false }}>
        <PostStack.Screen name="PostsList" component={PostsListScreen} />
        <PostStack.Screen name="PostDetail" component={PostDetailScreen} />
        <PostStack.Screen name="PostForm" component={PostFormScreen} />
@@ -37,6 +55,7 @@ function AdminTabs() {
 
   return (
     <Tab.Navigator
+      id="AdminTabs"
       screenOptions={{
         headerShown: true,
         headerStyle: { backgroundColor: colors.primary },
@@ -52,34 +71,35 @@ function AdminTabs() {
       />
       
       {isProfessor && (
-        <>
-          <Tab.Screen 
-            name="Teachers" 
-            component={TeachersListScreen} 
-            options={{ title: 'Professores' }}
-          />
-          <Tab.Screen 
-            name="Students" 
-            component={StudentsListScreen} 
-            options={{ title: 'Alunos' }}
-          />
-        </>
+        <Tab.Screen 
+          name="Teachers" 
+          component={TeachersListScreen} 
+          options={{ title: 'Professores' }}
+        />
+      )}
+      {isProfessor && (
+        <Tab.Screen 
+          name="Students" 
+          component={StudentsListScreen} 
+          options={{ title: 'Alunos' }}
+        />
       )}
     </Tab.Navigator>
   );
 }
 
 function AuthStack() {
+  const AuthStackDef = createStackNavigator();
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="Login" component={LoginScreen} />
-    </Stack.Navigator>
+    <AuthStackDef.Navigator id="AuthStack" screenOptions={{ headerShown: false }}>
+      <AuthStackDef.Screen name="Login" component={LoginScreen} />
+    </AuthStackDef.Navigator>
   );
 }
 
 function AppStack() {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Navigator id="AppStack" screenOptions={{ headerShown: false }}>
        <Stack.Screen name="Main" component={AdminTabs} />
        <Stack.Screen name="UserForm" component={UserFormScreen} options={{ headerShown: true, title: 'Editar Usuário' }} />
     </Stack.Navigator>

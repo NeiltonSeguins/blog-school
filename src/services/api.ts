@@ -2,7 +2,7 @@ import axios from 'axios';
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 
-const getBaseUrl = () => {
+const getBaseUrl = (): string => {
   // Tenta obter o IP da máquina onde o Expo está rodando (para dispositivo físico)
   const debuggerHost = Constants.expoConfig?.hostUri || Constants.manifest?.debuggerHost || Constants.manifest2?.extra?.expoGo?.debuggerHost;
 
