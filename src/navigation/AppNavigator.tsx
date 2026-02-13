@@ -13,6 +13,9 @@ import StudentsListScreen from '../screens/Admin/StudentsListScreen';
 import PostFormScreen from '../screens/Posts/PostFormScreen';
 import PostDetailScreen from '../screens/Posts/PostDetailScreen';
 import UserFormScreen from '../screens/Shared/UserFormScreen';
+import CategoriesScreen from '../screens/Shared/CategoriesScreen';
+import ProfileScreen from '../screens/Shared/ProfileScreen';
+import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
 
 // --- Type Definitions ---
 export type RootStackParamList = {
@@ -28,9 +31,9 @@ export type PostStackParamList = {
 };
 
 export type TabParamList = {
-  PostsTab: undefined;
-  Teachers: undefined;
-  Students: undefined;
+  HomeTab: undefined;
+  Categories: undefined;
+  Profile: undefined;
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -42,48 +45,63 @@ const PostStack = createStackNavigator<PostStackParamList>();
 function PostsStackNavigator() {
   return (
     <PostStack.Navigator id="PostsStack" screenOptions={{ headerShown: false }}>
-       <PostStack.Screen name="PostsList" component={PostsListScreen} />
-       <PostStack.Screen name="PostDetail" component={PostDetailScreen} />
-       <PostStack.Screen name="PostForm" component={PostFormScreen} />
+      <PostStack.Screen name="PostsList" component={PostsListScreen} />
+      <PostStack.Screen name="PostDetail" component={PostDetailScreen} />
+      <PostStack.Screen name="PostForm" component={PostFormScreen} />
     </PostStack.Navigator>
   );
 }
 
-function AdminTabs() {
+// function AdminTabs() { // Renaming to MainTabs or just updating content
+function MainTabs() {
   const { user } = useAuth();
-  const isProfessor = user?.role === 'professor';
 
   return (
     <Tab.Navigator
-      id="AdminTabs"
-      screenOptions={{
-        headerShown: true,
-        headerStyle: { backgroundColor: colors.primary },
-        headerTintColor: '#fff',
+      id="MainTabs"
+      screenOptions={({ route }) => ({
+        headerShown: false,
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textLight,
-      }}
+        tabBarStyle: {
+          paddingBottom: 5,
+          paddingTop: 5,
+          height: 60,
+        },
+        tabBarIcon: ({ focused, color, size }) => {
+          let iconName: string;
+
+          if (route.name === 'HomeTab') {
+            iconName = 'house';
+          } else if (route.name === 'Categories') {
+            iconName = 'table-cells-large';
+          } else if (route.name === 'Profile') {
+            iconName = 'user';
+          } else {
+            iconName = 'circle-question';
+          }
+
+          return <FontAwesome6 name={iconName as any} size={size} color={color} iconStyle="solid" />;
+        },
+      })}
     >
-      <Tab.Screen 
-        name="PostsTab" 
-        component={PostsStackNavigator} 
-        options={{ title: 'Posts' }}
+      <Tab.Screen
+        name="HomeTab"
+        component={PostsStackNavigator}
+        options={{ title: 'Home' }}
       />
-      
-      {isProfessor && (
-        <Tab.Screen 
-          name="Teachers" 
-          component={TeachersListScreen} 
-          options={{ title: 'Professores' }}
-        />
-      )}
-      {isProfessor && (
-        <Tab.Screen 
-          name="Students" 
-          component={StudentsListScreen} 
-          options={{ title: 'Alunos' }}
-        />
-      )}
+
+      <Tab.Screen
+        name="Categories"
+        component={CategoriesScreen}
+        options={{ title: 'Categorias' }}
+      />
+
+      <Tab.Screen
+        name="Profile"
+        component={ProfileScreen}
+        options={{ title: 'Perfil' }}
+      />
     </Tab.Navigator>
   );
 }
@@ -100,8 +118,8 @@ function AuthStack() {
 function AppStack() {
   return (
     <Stack.Navigator id="AppStack" screenOptions={{ headerShown: false }}>
-       <Stack.Screen name="Main" component={AdminTabs} />
-       <Stack.Screen name="UserForm" component={UserFormScreen} options={{ headerShown: true, title: 'Editar Usuário' }} />
+      <Stack.Screen name="Main" component={MainTabs} />
+      <Stack.Screen name="UserForm" component={UserFormScreen} options={{ headerShown: true, title: 'Editar Usuário' }} />
     </Stack.Navigator>
   );
 }
@@ -126,6 +144,6 @@ function NavigationRoot() {
 
 export default function AppNavigator() {
   return (
-      <NavigationRoot />
+    <NavigationRoot />
   );
 }

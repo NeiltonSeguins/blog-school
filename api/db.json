@@ -60,6 +60,30 @@
       "author": "Professor Admin",
       "createdAt": "2026-01-30T19:09:45.986Z",
       "id": 3
+    },
+    {
+      "id": 4,
+      "title": "A Importância da Leitura na Era Digital",
+      "description": "Como a leitura influencia o desenvolvimento cognitivo e crítico no mundo moderno.",
+      "content": "A leitura é uma habilidade fundamental que vai muito além da decodificação de letras e palavras. No contexto da era digital, onde a informação é abundante e flui rapidamente, a capacidade de ler, interpretar e analisar textos criticamente torna-se ainda mais crucial.\n\nA leitura estimula a imaginação, expande o vocabulário e aprimora a comunicação. Além disso, ela nos expõe a diferentes perspectivas e culturas, promovendo a empatia e o entendimento global. Estudos mostram que leitores assíduos tendem a ter melhor foco, memória e habilidades analíticas.\n\nPara cultivar o hábito da leitura, comece com gêneros que lhe interessem. Reserve um tempo diário, mesmo que curto, para se dedicar a um livro. Desconecte-se das distrações digitais e mergulhe na narrativa. Lembre-se, ler não é apenas absorver conteúdo, é dialogar com o autor e com suas próprias ideias.\n\nEm resumo, a leitura é uma ferramenta poderosa para o crescimento pessoal e profissional. Invista nela e colha os frutos de uma mente mais aberta e preparada para os desafios do mundo contemporâneo.",
+      "author": "Ana Silva",
+      "createdAt": "2024-02-10T09:15:00.000Z"
+    },
+    {
+      "id": 5,
+      "title": "Tecnologias Emergentes na Educação",
+      "description": "Explorando como a inteligência artificial e a realidade virtual estão transformando a sala de aula.",
+      "content": "A educação está passando por uma revolução impulsionada por tecnologias emergentes. A Inteligência Artificial (IA) e a Realidade Virtual (RV) não são mais conceitos futuristas, mas ferramentas reais que estão redefinindo o ensino e a aprendizagem.\n\nA IA permite a personalização do ensino em escala. Plataformas adaptativas podem identificar as dificuldades de cada aluno e oferecer trilhas de aprendizagem customizadas, garantindo que ninguém fique para trás. Além disso, assistentes virtuais podem tirar dúvidas instantaneamente, liberando os professores para focarem em mentorias e atividades mais complexas.\n\nPor outro lado, a RV transporta os alunos para lugares inalcançáveis fisicamente. Imagine estudar história visitando a Roma Antiga ou biologia explorando o interior de uma célula humana. Essas experiências imersivas tornam o aprendizado mais engajador e memorável.\n\nNo entanto, a implementação dessas tecnologias traz desafios. É preciso garantir a equidade no acesso e preparar os educadores para utilizarem essas ferramentas de forma pedagógica e ética. O futuro da educação é híbrido, humano e tecnológico, e cabe a nós moldá-lo para ser inclusivo e transformador.",
+      "author": "Carlos Souza",
+      "createdAt": "2024-02-12T16:45:00.000Z"
+    },
+    {
+      "id": 6,
+      "title": "Gestão de Tempo para Estudantes",
+      "description": "Estratégias práticas para conciliar estudos, trabalho e vida pessoal sem perder a sanidade.",
+      "content": "A vida de estudante pode ser desafiadora, com prazos apertados, provas e a necessidade de equilibrar diversas responsabilidades. A gestão eficaz do tempo é a chave para o sucesso acadêmico e o bem-estar pessoal.\n\nPrimeiramente, utilize uma agenda ou aplicativo de planejamento. Visualize sua semana e bloqueie horários para estudo, descanso e lazer. A técnica Pomodoro, que alterna focos intensos com breves pausas, é excelente para manter a produtividade sem exaustão.\n\nPriorize suas tarefas. Nem tudo é urgente ou importante. Aprenda a dizer 'não' a compromissos que não agregam aos seus objetivos. Além disso, evite a multitarefa; focar em uma coisa de cada vez aumenta a qualidade e a velocidade da execução.\n\nNão subestime o poder de uma boa noite de sono e da atividade física. Um corpo e mente descansados aprendem melhor. Lembre-se de ser flexível; imprevistos acontecem, e ajustar o plano faz parte do processo.\n\nDominar a gestão do tempo não é sobre fazer mais coisas, é sobre fazer as coisas certas no momento certo. Comece hoje a organizar sua rotina e veja seus resultados acadêmicos decolarem.",
+      "author": "Mariana Costa",
+      "createdAt": "2024-02-14T11:20:00.000Z"
     }
   ]
 }

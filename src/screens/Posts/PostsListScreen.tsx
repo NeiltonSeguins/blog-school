@@ -7,6 +7,7 @@ import { colors, spacing, fontSize } from '../../theme';
 import PostCard from '../../components/PostCard';
 import { Post } from '../../types';
 import { StackNavigationProp } from '@react-navigation/stack';
+import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
 
 // Define generic navigation type for now, will refine later
 interface Props {
@@ -17,8 +18,10 @@ export default function PostsListScreen({ navigation }: Props) {
   const { user, signOut } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('Todos');
   const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
+
+  const categories = ['Todos', 'Carreira', 'Estudos', 'Tecnologia', 'Ciências'];
 
   useFocusEffect(
     useCallback(() => {
@@ -30,8 +33,17 @@ export default function PostsListScreen({ navigation }: Props) {
     try {
       setLoading(true);
       const response = await api.get<Post[]>('/posts');
-      setPosts(response.data);
-      setFilteredPosts(response.data);
+
+      // Mocking data for design matching since backend doesn't support them yet
+      const mockedPosts = response.data.map((post, index) => ({
+        ...post,
+        image: `https://picsum.photos/seed/${post.id}/400/200`,
+        category: index % 2 === 0 ? 'Tecnologia' : 'Carreira', // Simple mock logic
+        createdAt: new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })
+      }));
+
+      setPosts(mockedPosts);
+      filterPosts(selectedCategory, mockedPosts);
     } catch (error) {
       Alert.alert('Erro', 'Não foi possível carregar os posts.');
     } finally {
@@ -39,30 +51,33 @@ export default function PostsListScreen({ navigation }: Props) {
     }
   }
 
-  function handleSearch(text: string) {
-    setSearch(text);
-    if (!text) {
-      setFilteredPosts(posts);
-      return;
+  function filterPosts(category: string, currentPosts: Post[]) {
+    if (category === 'Todos') {
+      setFilteredPosts(currentPosts);
+    } else {
+      const filtered = currentPosts.filter(post => post.category === category);
+      setFilteredPosts(filtered);
     }
-    const filtered = posts.filter(post => 
-      post.title.toLowerCase().includes(text.toLowerCase()) ||
-      post.description.toLowerCase().includes(text.toLowerCase())
-    );
-    setFilteredPosts(filtered);
+  }
+
+  function handleCategorySelect(category: string) {
+    setSelectedCategory(category);
+    filterPosts(category, posts);
   }
 
   async function handleDelete(id: number) {
     Alert.alert('Confirmar', 'Deseja excluir este post?', [
       { text: 'Cancelar', style: 'cancel' },
-      { text: 'Excluir', style: 'destructive', onPress: async () => {
+      {
+        text: 'Excluir', style: 'destructive', onPress: async () => {
           try {
             await api.delete(`/posts/${id}`);
             fetchPosts();
           } catch (error) {
             Alert.alert('Erro', 'Não foi possível excluir.');
           }
-      }}
+        }
+      }
     ]);
   }
 
@@ -75,19 +90,45 @@ export default function PostsListScreen({ navigation }: Props) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TextInput 
-          style={styles.search}
-          placeholder="Buscar posts..."
-          value={search}
-          onChangeText={handleSearch}
-        />
-        <TouchableOpacity onPress={signOut} style={styles.logoutButton}>
-          <Text style={styles.logoutText}>Sair</Text>
+        <View style={styles.headerLeft}>
+          <View style={styles.logoContainer}>
+            <FontAwesome6 name="graduation-cap" size={24} color={colors.primary} iconStyle="solid" />
+          </View>
+          <Text style={styles.headerTitle}>EducaBlog</Text>
+        </View>
+        <TouchableOpacity style={styles.searchButton}>
+          <FontAwesome6 name="magnifying-glass" size={20} color={colors.text} iconStyle="solid" />
         </TouchableOpacity>
       </View>
 
+      <View style={styles.filtersContainer}>
+        <FlatList
+          horizontal
+          data={categories}
+          keyExtractor={item => item}
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 4 }}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={[
+                styles.filterItem,
+                selectedCategory === item && styles.filterItemActive
+              ]}
+              onPress={() => handleCategorySelect(item)}
+            >
+              <Text style={[
+                styles.filterText,
+                selectedCategory === item && styles.filterTextActive
+              ]}>
+                {item}
+              </Text>
+            </TouchableOpacity>
+          )}
+        />
+      </View>
+
       {isProfessor && (
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.fab}
           onPress={() => navigation.navigate('PostForm')}
         >
@@ -99,8 +140,8 @@ export default function PostsListScreen({ navigation }: Props) {
         data={filteredPosts}
         keyExtractor={item => String(item.id)}
         renderItem={({ item }) => (
-          <PostCard 
-            post={item} 
+          <PostCard
+            post={item}
             onPress={() => navigation.navigate('PostDetail', { id: item.id })}
             onEdit={() => navigation.navigate('PostForm', { id: item.id })}
             onDelete={() => handleDelete(item.id)}
@@ -109,6 +150,8 @@ export default function PostsListScreen({ navigation }: Props) {
         )}
         contentContainerStyle={{ paddingBottom: 80 }}
         ListEmptyComponent={<Text style={styles.empty}>Nenhum post encontrado.</Text>}
+        refreshing={loading}
+        onRefresh={fetchPosts}
       />
     </View>
   );
@@ -122,25 +165,67 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
-    marginBottom: spacing.m,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.l,
+    paddingTop: spacing.s,
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: spacing.s,
   },
-  search: {
-    flex: 1,
-    height: 40,
-    backgroundColor: '#FFF',
-    borderRadius: 8,
-    paddingHorizontal: spacing.s,
-    borderWidth: 1,
-    borderColor: colors.border,
+  logoContainer: {
+    backgroundColor: '#E0F2FE', // Light blue background for logo
+    padding: 8,
+    borderRadius: 12,
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: colors.primary,
+  },
+  searchButton: {
+    padding: spacing.s,
+    backgroundColor: colors.card,
+    borderRadius: 50,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   logoutButton: {
-    justifyContent: 'center',
-    paddingHorizontal: spacing.s,
+    padding: spacing.s,
   },
-  logoutText: {
-    color: colors.error,
-    fontWeight: 'bold',
+  filtersContainer: {
+    marginBottom: spacing.l,
+  },
+  filterItem: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 25,
+    backgroundColor: colors.surface,
+    marginRight: spacing.s,
+    borderWidth: 1,
+    borderColor: 'transparent', // Cleaner look
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  filterItemActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  filterText: {
+    color: colors.textLight,
+    fontWeight: '600',
+    fontSize: fontSize.m,
+  },
+  filterTextActive: {
+    color: '#FFF',
   },
   fab: {
     backgroundColor: colors.primary,

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { colors, spacing, fontSize } from '../theme';
 import { Post } from '../types';
 
@@ -15,21 +15,41 @@ export default function PostCard({ post, onPress, onEdit, onDelete, canEdit }: P
   return (
     <View style={styles.card}>
       <TouchableOpacity onPress={onPress}>
-        <Text style={styles.title}>{post.title}</Text>
-        <Text style={styles.author}>Por: {post.author}</Text>
-        <Text style={styles.description} numberOfLines={2}>
-          {post.description}
-        </Text>
+        {post.image && (
+          <Image source={{ uri: post.image }} style={styles.image} resizeMode="cover" />
+        )}
+        <View style={styles.content}>
+          <View style={styles.header}>
+            {post.category && <Text style={styles.category}>{post.category}</Text>}
+            <Text style={styles.date}>{post.createdAt}</Text>
+          </View>
+
+          <Text style={styles.title}>{post.title}</Text>
+
+          <Text style={styles.description} numberOfLines={2}>
+            {post.description}
+          </Text>
+
+          <View style={styles.footer}>
+            <View style={styles.authorContainer}>
+              <Image
+                source={{ uri: `https://ui-avatars.com/api/?name=${post.author}&background=random` }}
+                style={styles.authorAvatar}
+              />
+              <Text style={styles.author}>{post.author}</Text>
+            </View>
+          </View>
+        </View>
       </TouchableOpacity>
-      
+
       {canEdit && (
         <View style={styles.actions}>
-           <TouchableOpacity onPress={onEdit} style={[styles.actionButton, { backgroundColor: colors.secondary }]}>
-             <Text style={styles.actionText}>Editar</Text>
-           </TouchableOpacity>
-           <TouchableOpacity onPress={onDelete} style={[styles.actionButton, { backgroundColor: colors.error }]}>
-             <Text style={[styles.actionText, { color: '#FFF' }]}>Excluir</Text>
-           </TouchableOpacity>
+          <TouchableOpacity onPress={onEdit} style={[styles.actionButton, { backgroundColor: colors.secondary }]}>
+            <Text style={styles.actionText}>Editar</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={onDelete} style={[styles.actionButton, { backgroundColor: colors.error }]}>
+            <Text style={[styles.actionText, { color: '#FFF' }]}>Excluir</Text>
+          </TouchableOpacity>
         </View>
       )}
     </View>
@@ -39,34 +59,76 @@ export default function PostCard({ post, onPress, onEdit, onDelete, canEdit }: P
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.card,
-    borderRadius: 8,
-    padding: spacing.m,
-    marginBottom: spacing.m,
+    borderRadius: 12,
+    marginBottom: spacing.l,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 2,
+    shadowRadius: 4,
     elevation: 3,
+    overflow: 'hidden',
+  },
+  image: {
+    width: '100%',
+    height: 180,
+  },
+  content: {
+    padding: spacing.m,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.xs,
+  },
+  category: {
+    fontSize: fontSize.s,
+    color: colors.primary,
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+  },
+  date: {
+    fontSize: fontSize.s,
+    color: colors.textLight,
   },
   title: {
     fontSize: fontSize.l,
     fontWeight: 'bold',
-    color: colors.primary,
+    color: colors.text,
     marginBottom: spacing.xs,
-  },
-  author: {
-    fontSize: fontSize.s,
-    color: colors.textLight,
-    marginBottom: spacing.s,
+    lineHeight: 24,
   },
   description: {
     fontSize: fontSize.m,
+    color: colors.textLight,
+    marginBottom: spacing.m,
+    lineHeight: 20,
+  },
+  footer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  authorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.s,
+  },
+  authorAvatar: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: colors.border,
+  },
+  author: {
+    fontSize: fontSize.s,
     color: colors.text,
+    fontWeight: '600',
   },
   actions: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    marginTop: spacing.m,
+    padding: spacing.m,
+    paddingTop: 0,
     gap: spacing.s,
   },
   actionButton: {

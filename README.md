@@ -54,6 +54,31 @@ src/
 │   ├── Auth/     # Login
 │   ├── Posts/    # Listagem, Detalhe e Edição de Posts
 │   └── Shared/   # Telas compartilhadas (Ex: UserForm)
-├── services/     # Configuração do Axios (api.js)
+├── services/     # Configuração do Axios (api.js) (Suporte a Android/iOS/Web)
 └── theme.js      # Constantes de estilo
 ```
+
+## ✨ Atualizações Recentes (Design Refresh)
+
+O aplicativo passou por uma reformulação visual para alinhar com o design **Stitch**:
+
+-   **Ícones**: Migração para `@react-native-vector-icons/fontawesome6` para um visual mais moderno.
+-   **Home**:
+    -   Novo Header com logo e busca.
+    -   Filtros de categoria em estilo "Pill" com sombra.
+    -   Cards de post com imagem de capa e avatar do autor.
+    -   **Pull to Refresh**: Atualize a lista de posts puxando para baixo.
+-   **Login**:
+    -   Layout limpo e minimalista.
+    -   Campos com ícones visuais (`envelope`, `lock`).
+    -   Remoção de login social (Google/Apple).
+-   **Detalhes do Post**:
+    -   Imagem de destaque imersiva.
+    -   Informações do autor e categoria em destaque.
+    -   Tipografia otimizada para leitura.
+
+## 🛠️ Scripts Úteis
+
+-   `npm run server`: Inicia o JSON Server (Backend Fake).
+-   `npx expo start`: Inicia o bundler do Metro (App).
+-   `npx tsc --noEmit`: Verifica erros de tipagem TypeScript.

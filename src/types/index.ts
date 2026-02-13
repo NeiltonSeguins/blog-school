@@ -13,6 +13,8 @@ export interface Post {
   content: string;
   author: string;
   createdAt: string;
+  image?: string;
+  category?: string;
 }
 
 export interface AuthContextData {
