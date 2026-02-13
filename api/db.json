@@ -38,12 +38,12 @@
   ],
   "posts": [
     {
-      "id": 1,
       "title": "Bem-vindo ao Blog School",
       "description": "Este é o primeiro post do blog. Aqui você encontrará conteúdos educacionais.",
       "content": "Conteúdo completo do post de boas-vindas. Lorem ipsum dolor sit amet...",
       "author": "Professor Admin",
-      "createdAt": "2024-01-01T10:00:00.000Z"
+      "createdAt": "2026-02-13T20:12:09.134Z",
+      "id": 1
     },
     {
       "id": 2,

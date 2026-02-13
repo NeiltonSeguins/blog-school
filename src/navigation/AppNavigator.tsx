@@ -8,8 +8,6 @@ import { colors } from '../theme';
 // Screens
 import LoginScreen from '../screens/Auth/LoginScreen';
 import PostsListScreen from '../screens/Posts/PostsListScreen';
-import TeachersListScreen from '../screens/Admin/TeachersListScreen';
-import StudentsListScreen from '../screens/Admin/StudentsListScreen';
 import PostFormScreen from '../screens/Posts/PostFormScreen';
 import PostDetailScreen from '../screens/Posts/PostDetailScreen';
 import UserFormScreen from '../screens/Shared/UserFormScreen';
