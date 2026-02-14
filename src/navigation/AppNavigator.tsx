@@ -11,8 +11,9 @@ import PostsListScreen from '../screens/Posts/PostsListScreen';
 import PostFormScreen from '../screens/Posts/PostFormScreen';
 import PostDetailScreen from '../screens/Posts/PostDetailScreen';
 import UserFormScreen from '../screens/Shared/UserFormScreen';
-import CategoriesScreen from '../screens/Shared/CategoriesScreen';
+
 import ProfileScreen from '../screens/Shared/ProfileScreen';
+import UsersListScreen from '../screens/Admin/UsersListScreen';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
 
 // --- Type Definitions ---
@@ -30,7 +31,8 @@ export type PostStackParamList = {
 
 export type TabParamList = {
   HomeTab: undefined;
-  Categories: undefined;
+  Teachers: { role: 'professor' };
+  Students: { role: 'aluno' };
   Profile: undefined;
 };
 
@@ -71,8 +73,10 @@ function MainTabs() {
 
           if (route.name === 'HomeTab') {
             iconName = 'house';
-          } else if (route.name === 'Categories') {
-            iconName = 'table-cells-large';
+          } else if (route.name === 'Teachers') {
+            iconName = 'chalkboard-user';
+          } else if (route.name === 'Students') {
+            iconName = 'graduation-cap';
           } else if (route.name === 'Profile') {
             iconName = 'user';
           } else {
@@ -90,10 +94,20 @@ function MainTabs() {
       />
 
       <Tab.Screen
-        name="Categories"
-        component={CategoriesScreen}
-        options={{ title: 'Categorias' }}
+        name="Teachers"
+        component={UsersListScreen}
+        initialParams={{ role: 'professor' }}
+        options={{ title: user?.role === 'professor' ? 'Lista de Professores' : 'Professores' }}
       />
+
+      {user?.role === 'professor' && (
+        <Tab.Screen
+          name="Students"
+          component={UsersListScreen}
+          initialParams={{ role: 'aluno' }}
+          options={{ title: 'Lista de Alunos' }}
+        />
+      )}
 
       <Tab.Screen
         name="Profile"
@@ -117,7 +131,7 @@ function AppStack() {
   return (
     <Stack.Navigator id="AppStack" screenOptions={{ headerShown: false }}>
       <Stack.Screen name="Main" component={MainTabs} />
-      <Stack.Screen name="UserForm" component={UserFormScreen} options={{ headerShown: true, title: 'Editar Usuário' }} />
+      <Stack.Screen name="UserForm" component={UserFormScreen} options={{ headerShown: true, title: 'Editar' }} />
     </Stack.Navigator>
   );
 }

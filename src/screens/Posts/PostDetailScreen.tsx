@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, Alert, Image, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, Alert, Dimensions, Image } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import api from '../../services/api';
+import { formatDate } from '../../utils/date';
 import { colors, spacing, fontSize } from '../../theme';
 import { Post } from '../../types';
 import { RouteProp } from '@react-navigation/native';
@@ -19,16 +21,9 @@ export default function PostDetailScreen({ route, navigation }: Props) {
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Mock data states (since API doesn't return them yet)
-  const [mockImage, setMockImage] = useState('');
-  const [mockCategory, setMockCategory] = useState('');
-
   useEffect(() => {
     if (id) {
       fetchPost();
-      // Generate consistent mock data based on ID
-      setMockImage(`https://picsum.photos/seed/${id}/800/600`);
-      setMockCategory(Number(id) % 2 === 0 ? 'Tecnologia' : 'Carreira');
     }
   }, [id]);
 
@@ -55,47 +50,48 @@ export default function PostDetailScreen({ route, navigation }: Props) {
   if (!post) return null;
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+      <ScrollView showsVerticalScrollIndicator={false}>
 
-      {/* Header Image */}
-      <View style={styles.imageContainer}>
-        <Image source={{ uri: mockImage }} style={styles.coverImage} resizeMode="cover" />
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <FontAwesome6 name="arrow-left" size={20} color="#FFF" iconStyle="solid" />
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.contentContainer}>
-
-        {/* Category Pill */}
-        <View style={styles.categoryContainer}>
-          <View style={styles.categoryPill}>
-            <Text style={styles.categoryText}>{mockCategory}</Text>
-          </View>
-          <Text style={styles.date}>{new Date(post.createdAt || Date.now()).toLocaleDateString()}</Text>
+        {/* Header Image */}
+        <View style={styles.imageContainer}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <FontAwesome6 name="arrow-left" size={20} color={colors.primary} iconStyle="solid" />
+          </TouchableOpacity>
         </View>
 
-        {/* Title */}
-        <Text style={styles.title}>{post.title}</Text>
+        <View style={styles.contentContainer}>
 
-        {/* Author Info */}
-        <View style={styles.authorContainer}>
-          <Image
-            source={{ uri: `https://ui-avatars.com/api/?name=${post.author}&background=random` }}
-            style={styles.authorAvatar}
-          />
-          <View>
-            <Text style={styles.authorLabel}>Publicado por</Text>
-            <Text style={styles.authorName}>{post.author}</Text>
+          {/* Category Pill */}
+          <View style={styles.categoryContainer}>
+            <View style={styles.categoryPill}>
+              <Text style={styles.categoryText}>{post.category || 'Geral'}</Text>
+            </View>
+            <Text style={styles.date}>{formatDate(post.createdAt)}</Text>
           </View>
+
+          {/* Title */}
+          <Text style={styles.title}>{post.title}</Text>
+
+          {/* Author Info */}
+          <View style={styles.authorContainer}>
+            <Image
+              source={{ uri: `https://ui-avatars.com/api/?name=${post.author}&background=random` }}
+              style={styles.authorAvatar}
+            />
+            <View>
+              <Text style={styles.authorLabel}>Publicado por</Text>
+              <Text style={styles.authorName}>{post.author}</Text>
+            </View>
+          </View>
+
+          <View style={styles.divider} />
+
+          {/* Content */}
+          <Text style={styles.content}>{post.content}</Text>
         </View>
-
-        <View style={styles.divider} />
-
-        {/* Content */}
-        <Text style={styles.content}>{post.content}</Text>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -111,30 +107,17 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
   },
   imageContainer: {
-    height: 250,
-    width: '100%',
-    position: 'relative',
-  },
-  coverImage: {
-    width: '100%',
-    height: '100%',
+    paddingHorizontal: spacing.m,
+    paddingVertical: spacing.s,
   },
   backButton: {
-    position: 'absolute',
-    top: spacing.l, // Adjust for status bar if needed
-    left: spacing.m,
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(0,0,0,0.3)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   contentContainer: {
     padding: spacing.l,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    marginTop: -24,
     backgroundColor: '#FFF',
   },
   categoryContainer: {

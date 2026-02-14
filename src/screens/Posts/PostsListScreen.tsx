@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { View, Text, FlatList, TextInput, StyleSheet, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../services/api';
@@ -19,9 +20,11 @@ export default function PostsListScreen({ navigation }: Props) {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('Todos');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchVisible, setIsSearchVisible] = useState(false);
   const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
 
-  const categories = ['Todos', 'Carreira', 'Estudos', 'Tecnologia', 'Ciências'];
+  const [categories, setCategories] = useState<string[]>(['Todos']);
 
   useFocusEffect(
     useCallback(() => {
@@ -34,16 +37,15 @@ export default function PostsListScreen({ navigation }: Props) {
       setLoading(true);
       const response = await api.get<Post[]>('/posts');
 
-      // Mocking data for design matching since backend doesn't support them yet
-      const mockedPosts = response.data.map((post, index) => ({
-        ...post,
-        image: `https://picsum.photos/seed/${post.id}/400/200`,
-        category: index % 2 === 0 ? 'Tecnologia' : 'Carreira', // Simple mock logic
-        createdAt: new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })
-      }));
+      const postsData = response.data;
 
-      setPosts(mockedPosts);
-      filterPosts(selectedCategory, mockedPosts);
+      setPosts(postsData);
+
+      // Extract unique categories from posts
+      const uniqueCategories = Array.from(new Set(postsData.map(p => p.category || 'Geral')));
+      setCategories(['Todos', ...uniqueCategories]);
+
+      filterPosts(selectedCategory, searchQuery, postsData);
     } catch (error) {
       Alert.alert('Erro', 'Não foi possível carregar os posts.');
     } finally {
@@ -51,18 +53,37 @@ export default function PostsListScreen({ navigation }: Props) {
     }
   }
 
-  function filterPosts(category: string, currentPosts: Post[]) {
-    if (category === 'Todos') {
-      setFilteredPosts(currentPosts);
-    } else {
-      const filtered = currentPosts.filter(post => post.category === category);
-      setFilteredPosts(filtered);
+  function filterPosts(category: string, search: string, currentPosts: Post[]) {
+    let filtered = currentPosts;
+
+    if (category !== 'Todos') {
+      filtered = filtered.filter(post => (post.category || 'Geral') === category);
     }
+
+    if (search.trim()) {
+      filtered = filtered.filter(post =>
+        post.title.toLowerCase().includes(search.toLowerCase())
+      );
+    }
+
+    setFilteredPosts(filtered);
   }
 
   function handleCategorySelect(category: string) {
     setSelectedCategory(category);
-    filterPosts(category, posts);
+    filterPosts(category, searchQuery, posts);
+  }
+
+  function handleSearch(text: string) {
+    setSearchQuery(text);
+    filterPosts(selectedCategory, text, posts);
+  }
+
+  function toggleSearch() {
+    setIsSearchVisible(!isSearchVisible);
+    if (isSearchVisible) {
+      handleSearch(''); // Clear search when closing
+    }
   }
 
   async function handleDelete(id: number) {
@@ -71,7 +92,7 @@ export default function PostsListScreen({ navigation }: Props) {
       {
         text: 'Excluir', style: 'destructive', onPress: async () => {
           try {
-            await api.delete(`/posts/${id}`);
+            await api.delete(`/ posts / ${id} `);
             fetchPosts();
           } catch (error) {
             Alert.alert('Erro', 'Não foi possível excluir.');
@@ -88,7 +109,7 @@ export default function PostsListScreen({ navigation }: Props) {
   const isProfessor = user?.role === 'professor';
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <View style={styles.logoContainer}>
@@ -96,10 +117,22 @@ export default function PostsListScreen({ navigation }: Props) {
           </View>
           <Text style={styles.headerTitle}>EducaBlog</Text>
         </View>
-        <TouchableOpacity style={styles.searchButton}>
-          <FontAwesome6 name="magnifying-glass" size={20} color={colors.text} iconStyle="solid" />
+        <TouchableOpacity style={styles.searchButton} onPress={toggleSearch}>
+          <FontAwesome6 name={isSearchVisible ? "xmark" : "magnifying-glass"} size={20} color={colors.text} iconStyle="solid" />
         </TouchableOpacity>
       </View>
+
+      {isSearchVisible && (
+        <View style={styles.searchContainer}>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Buscar por título..."
+            value={searchQuery}
+            onChangeText={handleSearch}
+            autoFocus
+          />
+        </View>
+      )}
 
       <View style={styles.filtersContainer}>
         <FlatList
@@ -153,7 +186,7 @@ export default function PostsListScreen({ navigation }: Props) {
         refreshing={loading}
         onRefresh={fetchPosts}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -194,6 +227,18 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 4,
     elevation: 2,
+  },
+  searchContainer: {
+    paddingHorizontal: spacing.s,
+    marginBottom: spacing.m,
+  },
+  searchInput: {
+    backgroundColor: '#FFF',
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 8,
+    padding: spacing.m,
+    fontSize: fontSize.m,
   },
   logoutButton: {
     padding: spacing.s,

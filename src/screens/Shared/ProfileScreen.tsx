@@ -1,10 +1,18 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import { useAuth } from '../../contexts/AuthContext';
 import { colors, spacing, fontSize } from '../../theme';
 
 export default function ProfileScreen() {
   const { user, signOut } = useAuth();
+  const navigation = useNavigation<StackNavigationProp<any>>();
+
+  function handleEdit() {
+    const userType = user?.role === 'professor' ? 'teacher' : 'student';
+    navigation.navigate('UserForm', { id: user?.id, userType });
+  }
 
   return (
     <View style={styles.container}>
@@ -20,6 +28,10 @@ export default function ProfileScreen() {
         <Text style={styles.label}>Tipo:</Text>
         <Text style={styles.value}>{user?.role === 'professor' ? 'Professor' : 'Aluno'}</Text>
       </View>
+
+      <TouchableOpacity style={styles.editButton} onPress={handleEdit}>
+        <Text style={styles.editButtonText}>Editar Informações</Text>
+      </TouchableOpacity>
 
       <TouchableOpacity onPress={signOut} style={styles.logoutButton}>
         <Text style={styles.logoutText}>Sair da Conta</Text>
@@ -62,6 +74,18 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontWeight: '500',
     marginBottom: spacing.m,
+  },
+  editButton: {
+    backgroundColor: colors.primary,
+    padding: spacing.m,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: spacing.m,
+  },
+  editButtonText: {
+    color: '#FFF',
+    fontWeight: 'bold',
+    fontSize: fontSize.m,
   },
   logoutButton: {
     backgroundColor: '#FFE5E5',

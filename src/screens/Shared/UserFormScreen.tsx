@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import api from '../../services/api';
 import { colors, spacing, fontSize } from '../../theme';
 import { RouteProp } from '@react-navigation/native';
@@ -12,7 +13,7 @@ interface Props {
 
 export default function UserFormScreen({ route, navigation }: Props) {
   const { id, userType } = route.params || {}; // userType: 'teacher' | 'student'
-  
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -48,7 +49,7 @@ export default function UserFormScreen({ route, navigation }: Props) {
 
     setSaving(true);
     const role = userType === 'teacher' ? 'professor' : 'aluno';
-    
+
     const data = {
       name,
       email,
@@ -73,50 +74,55 @@ export default function UserFormScreen({ route, navigation }: Props) {
   if (loading) return <ActivityIndicator size="large" color={colors.primary} style={{ flex: 1 }} />;
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.headerTitle}>
-        {id ? 'Editar' : 'Novo'} {userType === 'teacher' ? 'Professor' : 'Aluno'}
-      </Text>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text style={styles.headerTitle}>
+          {userType === 'teacher' ? 'Professor' : 'Aluno'}
+        </Text>
 
-      <Text style={styles.label}>Nome</Text>
-      <TextInput
-        style={styles.input}
-        value={name}
-        onChangeText={setName}
-        placeholder="Nome completo"
-      />
+        <Text style={styles.label}>Nome</Text>
+        <TextInput
+          style={styles.input}
+          value={name}
+          onChangeText={setName}
+          placeholder="Nome completo"
+        />
 
-      <Text style={styles.label}>E-mail</Text>
-      <TextInput
-        style={styles.input}
-        value={email}
-        onChangeText={setEmail}
-        placeholder="E-mail de acesso"
-        keyboardType="email-address"
-        autoCapitalize="none"
-      />
+        <Text style={styles.label}>E-mail</Text>
+        <TextInput
+          style={styles.input}
+          value={email}
+          onChangeText={setEmail}
+          placeholder="E-mail de acesso"
+          keyboardType="email-address"
+          autoCapitalize="none"
+        />
 
-      <Text style={styles.label}>Senha</Text>
-      <TextInput
-        style={styles.input}
-        value={password}
-        onChangeText={setPassword}
-        placeholder="Senha de acesso"
-        secureTextEntry={false} 
-      />
+        <Text style={styles.label}>Senha</Text>
+        <TextInput
+          style={styles.input}
+          value={password}
+          onChangeText={setPassword}
+          placeholder="Senha de acesso"
+          secureTextEntry={false}
+        />
 
-      <TouchableOpacity style={styles.button} onPress={handleSave} disabled={saving}>
-        {saving ? <ActivityIndicator color="#FFF" /> : <Text style={styles.buttonText}>Salvar</Text>}
-      </TouchableOpacity>
-    </ScrollView>
+        <TouchableOpacity style={styles.button} onPress={handleSave} disabled={saving}>
+          {saving ? <ActivityIndicator color="#FFF" /> : <Text style={styles.buttonText}>Salvar</Text>}
+        </TouchableOpacity>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
-    padding: spacing.m,
     backgroundColor: colors.background,
+  },
+  container: {
+    flexGrow: 1,
+    padding: spacing.m,
   },
   headerTitle: {
     fontSize: fontSize.xl,

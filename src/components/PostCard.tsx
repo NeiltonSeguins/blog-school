@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { colors, spacing, fontSize } from '../theme';
 import { Post } from '../types';
+import { formatDate } from '../utils/date';
 
 interface PostCardProps {
   post: Post;
@@ -15,13 +16,11 @@ export default function PostCard({ post, onPress, onEdit, onDelete, canEdit }: P
   return (
     <View style={styles.card}>
       <TouchableOpacity onPress={onPress}>
-        {post.image && (
-          <Image source={{ uri: post.image }} style={styles.image} resizeMode="cover" />
-        )}
+
         <View style={styles.content}>
           <View style={styles.header}>
             {post.category && <Text style={styles.category}>{post.category}</Text>}
-            <Text style={styles.date}>{post.createdAt}</Text>
+            <Text style={styles.date}>{formatDate(post.createdAt)}</Text>
           </View>
 
           <Text style={styles.title}>{post.title}</Text>
@@ -44,11 +43,11 @@ export default function PostCard({ post, onPress, onEdit, onDelete, canEdit }: P
 
       {canEdit && (
         <View style={styles.actions}>
-          <TouchableOpacity onPress={onEdit} style={[styles.actionButton, { backgroundColor: colors.secondary }]}>
-            <Text style={styles.actionText}>Editar</Text>
+          <TouchableOpacity onPress={onEdit}>
+            <Text style={styles.editAction}>Editar</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={onDelete} style={[styles.actionButton, { backgroundColor: colors.error }]}>
-            <Text style={[styles.actionText, { color: '#FFF' }]}>Excluir</Text>
+          <TouchableOpacity onPress={onDelete}>
+            <Text style={styles.deleteAction}>Excluir</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -68,10 +67,7 @@ const styles = StyleSheet.create({
     elevation: 3,
     overflow: 'hidden',
   },
-  image: {
-    width: '100%',
-    height: 180,
-  },
+
   content: {
     padding: spacing.m,
   },
@@ -129,16 +125,14 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     padding: spacing.m,
     paddingTop: 0,
-    gap: spacing.s,
+    gap: spacing.m,
   },
-  actionButton: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 4,
-  },
-  actionText: {
-    fontSize: fontSize.s,
+  editAction: {
+    color: colors.primary,
     fontWeight: 'bold',
-    color: colors.text,
+  },
+  deleteAction: {
+    color: colors.error,
+    fontWeight: 'bold',
   }
 });
