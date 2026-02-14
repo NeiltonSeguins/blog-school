@@ -22,5 +22,6 @@ export interface AuthContextData {
   user: User | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<string | null>;
-  signOut: () => Promise<void>;
+  signOut: () => void;
+  signUp: (name: string, email: string, password: string, role: string) => Promise<string | null>;
 }

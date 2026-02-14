@@ -7,6 +7,7 @@ import { colors } from '../theme';
 
 // Screens
 import LoginScreen from '../screens/Auth/LoginScreen';
+import RegisterScreen from '../screens/Auth/RegisterScreen';
 import PostsListScreen from '../screens/Posts/PostsListScreen';
 import PostFormScreen from '../screens/Posts/PostFormScreen';
 import PostDetailScreen from '../screens/Posts/PostDetailScreen';
@@ -123,6 +124,7 @@ function AuthStack() {
   return (
     <AuthStackDef.Navigator id="AuthStack" screenOptions={{ headerShown: false }}>
       <AuthStackDef.Screen name="Login" component={LoginScreen} />
+      <AuthStackDef.Screen name="Register" component={RegisterScreen} />
     </AuthStackDef.Navigator>
   );
 }

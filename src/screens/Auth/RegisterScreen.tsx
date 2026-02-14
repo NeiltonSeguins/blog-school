@@ -1,35 +1,39 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
 import { colors, spacing, fontSize } from '../../theme';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
-
 import { StackNavigationProp } from '@react-navigation/stack';
 
 interface Props {
   navigation: StackNavigationProp<any>;
 }
 
-export default function LoginScreen({ navigation }: Props) {
-  const { signIn } = useAuth();
+export default function RegisterScreen({ navigation }: Props) {
+  const { signUp } = useAuth();
+
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState<'aluno' | 'professor'>('aluno');
+
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  async function handleLogin() {
-    if (!email || !password) {
+  async function handleRegister() {
+    if (!name || !email || !password) {
       Alert.alert('Erro', 'Preencha todos os campos');
       return;
     }
 
     setLoading(true);
-    const error = await signIn(email, password);
+    const error = await signUp(name, email, password, role);
     setLoading(false);
 
     if (error) {
-      Alert.alert('Erro no login', error);
+      Alert.alert('Erro no cadastro', error);
     }
+    // If no error, AuthContext will update state and AppNavigator will switch to AppStack automatically
   }
 
   return (
@@ -39,19 +43,58 @@ export default function LoginScreen({ navigation }: Props) {
     >
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <FontAwesome6 name="arrow-left" size={24} color={colors.primary} iconStyle="solid" />
+          </TouchableOpacity>
+
           <View style={styles.logoCircle}>
-            <FontAwesome6 name="graduation-cap" size={40} color={colors.primary} iconStyle="solid" />
+            <FontAwesome6 name="user-plus" size={32} color={colors.primary} iconStyle="solid" />
           </View>
-          <Text style={styles.title}>Bem-vindo(a)</Text>
-          <Text style={styles.subtitle}>Faça login para acessar o EducaBlog</Text>
+          <Text style={styles.title}>Crie sua conta</Text>
+          <Text style={styles.subtitle}>Junte-se ao EducaBlog</Text>
         </View>
 
         <View style={styles.form}>
+
+          {/* Role Selection */}
+          <View style={styles.roleContainer}>
+            <Text style={styles.roleLabel}>Eu sou:</Text>
+            <View style={styles.roleButtons}>
+              <TouchableOpacity
+                style={[styles.roleButton, role === 'aluno' && styles.roleButtonActive]}
+                onPress={() => setRole('aluno')}
+              >
+                <FontAwesome6 name="user-graduate" size={16} color={role === 'aluno' ? '#FFF' : colors.primary} iconStyle="solid" style={{ marginRight: 8 }} />
+                <Text style={[styles.roleButtonText, role === 'aluno' && styles.roleButtonTextActive]}>Aluno</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.roleButton, role === 'professor' && styles.roleButtonActive]}
+                onPress={() => setRole('professor')}
+              >
+                <FontAwesome6 name="chalkboard-user" size={16} color={role === 'professor' ? '#FFF' : colors.primary} iconStyle="solid" style={{ marginRight: 8 }} />
+                <Text style={[styles.roleButtonText, role === 'professor' && styles.roleButtonTextActive]}>Professor</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <View style={styles.inputContainer}>
+            <FontAwesome6 name="user" size={20} color={colors.textLight} iconStyle="solid" style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              placeholder="Nome completo"
+              placeholderTextColor={colors.textLight}
+              value={name}
+              onChangeText={setName}
+              autoCapitalize="words"
+            />
+          </View>
+
           <View style={styles.inputContainer}>
             <FontAwesome6 name="envelope" size={20} color={colors.textLight} iconStyle="solid" style={styles.inputIcon} />
             <TextInput
               style={styles.input}
-              placeholder="Digite seu e-mail"
+              placeholder="E-mail"
               placeholderTextColor={colors.textLight}
               value={email}
               onChangeText={setEmail}
@@ -64,7 +107,7 @@ export default function LoginScreen({ navigation }: Props) {
             <FontAwesome6 name="lock" size={20} color={colors.textLight} iconStyle="solid" style={styles.inputIcon} />
             <TextInput
               style={styles.input}
-              placeholder="Digite sua senha"
+              placeholder="Senha"
               placeholderTextColor={colors.textLight}
               value={password}
               onChangeText={setPassword}
@@ -75,15 +118,11 @@ export default function LoginScreen({ navigation }: Props) {
             </TouchableOpacity>
           </View>
 
-          <TouchableOpacity style={styles.forgotPassword}>
-            <Text style={styles.forgotPasswordText}>Esqueceu sua senha?</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
+          <TouchableOpacity style={styles.button} onPress={handleRegister} disabled={loading}>
             {loading ? (
               <ActivityIndicator color="#FFF" />
             ) : (
-              <Text style={styles.buttonText}>Entrar</Text>
+              <Text style={styles.buttonText}>Cadastrar</Text>
             )}
           </TouchableOpacity>
 
@@ -93,16 +132,9 @@ export default function LoginScreen({ navigation }: Props) {
             <View style={styles.divider} />
           </View>
 
-          <TouchableOpacity style={styles.registerButton} onPress={() => navigation.navigate('Register')}>
-            <Text style={styles.registerButtonText}>Criar nova conta</Text>
+          <TouchableOpacity style={styles.loginButton} onPress={() => navigation.goBack()}>
+            <Text style={styles.loginButtonText}>Já tenho uma conta</Text>
           </TouchableOpacity>
-        </View>
-
-        {/* Keeping helper for dev/demo purposes but making it subtle */}
-        <View style={styles.helperContainer}>
-          <Text style={styles.helperTitle}>Acesso Rápido (Demo):</Text>
-          <Text style={styles.helperText}>Admin: admin@blog.com / 123</Text>
-          <Text style={styles.helperText}>Aluno: student@blog.com / 123</Text>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -112,7 +144,7 @@ export default function LoginScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC', // colors.surface if available, else light gray
+    backgroundColor: '#F8FAFC',
   },
   scrollContent: {
     flexGrow: 1,
@@ -121,19 +153,27 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: 'center',
-    marginBottom: spacing.xl,
+    marginBottom: spacing.l,
+    position: 'relative',
+  },
+  backButton: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    padding: spacing.s,
   },
   logoCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#E0F2FE', // Light blue
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: '#E0F2FE',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: spacing.l,
+    marginBottom: spacing.m,
+    marginTop: spacing.xl,
   },
   title: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: 'bold',
     color: colors.primary,
     marginBottom: spacing.xs,
@@ -144,6 +184,41 @@ const styles = StyleSheet.create({
   },
   form: {
     width: '100%',
+  },
+  roleContainer: {
+    marginBottom: spacing.l,
+  },
+  roleLabel: {
+    fontSize: fontSize.m,
+    color: colors.text,
+    marginBottom: spacing.s,
+    fontWeight: '600',
+  },
+  roleButtons: {
+    flexDirection: 'row',
+    gap: spacing.m,
+  },
+  roleButton: {
+    flex: 1,
+    flexDirection: 'row',
+    height: 48,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+  },
+  roleButtonActive: {
+    backgroundColor: colors.primary,
+  },
+  roleButtonText: {
+    color: colors.primary,
+    fontWeight: '600',
+    fontSize: fontSize.m,
+  },
+  roleButtonTextActive: {
+    color: '#FFF',
   },
   inputContainer: {
     flexDirection: 'row',
@@ -168,15 +243,6 @@ const styles = StyleSheet.create({
   eyeIcon: {
     padding: spacing.s,
   },
-  forgotPassword: {
-    alignSelf: 'flex-end',
-    marginBottom: spacing.l,
-  },
-  forgotPasswordText: {
-    color: colors.primary,
-    fontWeight: '600',
-    fontSize: fontSize.s,
-  },
   button: {
     backgroundColor: colors.primary,
     height: 56,
@@ -188,6 +254,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 4,
+    marginTop: spacing.m,
   },
   buttonText: {
     color: '#FFF',
@@ -197,7 +264,7 @@ const styles = StyleSheet.create({
   dividerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: spacing.xl,
+    marginVertical: spacing.l,
   },
   divider: {
     flex: 1,
@@ -209,7 +276,7 @@ const styles = StyleSheet.create({
     color: colors.textLight,
     fontWeight: '600',
   },
-  registerButton: {
+  loginButton: {
     height: 56,
     borderRadius: 12,
     justifyContent: 'center',
@@ -218,24 +285,9 @@ const styles = StyleSheet.create({
     borderColor: colors.primary,
     backgroundColor: 'transparent',
   },
-  registerButtonText: {
+  loginButtonText: {
     color: colors.primary,
     fontSize: fontSize.m,
     fontWeight: 'bold',
-  },
-  helperContainer: {
-    marginTop: spacing.xl,
-    alignItems: 'center',
-    opacity: 0.6,
-  },
-  helperTitle: {
-    fontSize: fontSize.s,
-    fontWeight: 'bold',
-    marginBottom: 4,
-    color: colors.textLight,
-  },
-  helperText: {
-    fontSize: fontSize.s,
-    color: colors.textLight,
   },
 });

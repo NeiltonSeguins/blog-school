@@ -27,6 +27,27 @@
       "password": "Jurandir",
       "role": "aluno",
       "id": 4
+    },
+    {
+      "id": 1771098265553,
+      "name": "Neilton ",
+      "email": "seg@blog.com",
+      "password": "12345",
+      "role": "professor"
+    },
+    {
+      "id": 1771098302519,
+      "name": "Mariana",
+      "email": "silva@blog.com",
+      "password": "09876",
+      "role": "professor"
+    },
+    {
+      "id": 1771098611289,
+      "name": "José ",
+      "email": "soje@blog.com",
+      "password": "123",
+      "role": "aluno"
     }
   ],
   "posts": [
