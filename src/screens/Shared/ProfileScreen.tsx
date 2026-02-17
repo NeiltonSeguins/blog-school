@@ -27,6 +27,20 @@ export default function ProfileScreen() {
 
         <Text style={styles.label}>Tipo:</Text>
         <Text style={styles.value}>{user?.role === 'professor' ? 'Professor' : 'Aluno'}</Text>
+
+        {user?.subject && user.role === 'professor' && (
+          <>
+            <Text style={styles.label}>Disciplina:</Text>
+            <Text style={styles.value}>{user.subject}</Text>
+          </>
+        )}
+
+        {user?.bio && (
+          <>
+            <Text style={styles.label}>Bio:</Text>
+            <Text style={styles.value}>{user.bio}</Text>
+          </>
+        )}
       </View>
 
       <TouchableOpacity style={styles.editButton} onPress={handleEdit}>

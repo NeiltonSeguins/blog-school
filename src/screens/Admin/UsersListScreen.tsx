@@ -85,22 +85,37 @@ export default function UsersListScreen({ navigation, route }: Props) {
         data={users}
         keyExtractor={item => String(item.id)}
         renderItem={({ item }) => (
-          <View style={styles.card}>
+          <TouchableOpacity
+            style={styles.card}
+            onPress={() => navigation.navigate('UserProfile', { userId: item.id })}
+          >
             <View style={styles.info}>
               <Text style={styles.name}>{item.name}</Text>
               <Text style={styles.email}>{item.email}</Text>
+              {role === 'professor' && item.subject ? (
+                <Text style={styles.subject}>Disciplina: {item.subject}</Text>
+              ) : null}
+              {item.bio ? (
+                <Text style={styles.bio} numberOfLines={2}>{item.bio}</Text>
+              ) : null}
             </View>
             {canEdit && (
               <View style={styles.actions}>
-                <TouchableOpacity onPress={() => navigation.navigate('UserForm', { id: item.id, userType: userTypeParam })}>
+                <TouchableOpacity onPress={(e) => {
+                  e.stopPropagation();
+                  navigation.navigate('UserForm', { id: item.id, userType: userTypeParam });
+                }}>
                   <Text style={styles.editAction}>Editar</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => handleDelete(item.id)}>
+                <TouchableOpacity onPress={(e) => {
+                  e.stopPropagation();
+                  handleDelete(item.id);
+                }}>
                   <Text style={styles.deleteAction}>Excluir</Text>
                 </TouchableOpacity>
               </View>
             )}
-          </View>
+          </TouchableOpacity>
         )}
         ListEmptyComponent={<Text style={styles.empty}>{emptyMessage}</Text>}
       />
@@ -154,6 +169,18 @@ const styles = StyleSheet.create({
   email: {
     fontSize: fontSize.s,
     color: colors.textLight,
+  },
+  subject: {
+    fontSize: fontSize.s,
+    color: colors.primary,
+    marginTop: 4,
+    fontWeight: '500',
+  },
+  bio: {
+    fontSize: fontSize.s,
+    color: colors.text,
+    marginTop: 4,
+    fontStyle: 'italic',
   },
   actions: {
     flexDirection: 'row',

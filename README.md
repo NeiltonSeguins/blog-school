@@ -1,84 +1,319 @@
 # Blog School App
-Este é um aplicativo mobile em React Native para um blog educacional, com perfis para Professores e Alunos.
+
+Aplicativo mobile educacional desenvolvido em React Native (Expo) com funcionalidades diferenciadas para Professores e Alunos.
+
+## 📋 Índice
+
+- [Tecnologias](#-tecnologias)
+- [Setup Inicial](#-setup-inicial)
+- [Arquitetura da Aplicação](#-arquitetura-da-aplicação)
+- [Funcionalidades](#-funcionalidades)
+- [Guia de Uso](#-guia-de-uso)
+- [Scripts Disponíveis](#-scripts-disponíveis)
 
 ## 🚀 Tecnologias
 
-- **React Native (Expo)**
-- **React Navigation** (Stack & Tabs)
-- **Context API** (Gerenciamento de Estado)
-- **AsyncStorage** (Persistência local)
-- **Axios** (Cliente HTTP)
-- **JSON Server** (API Fake)
+### Core
+- **React Native** 0.81.5
+- **Expo** ~54.0.33
+- **TypeScript** ~5.9.2
 
-## 📦 Instalação e Execução
+### Navegação
+- **@react-navigation/native** ^7.1.28
+- **@react-navigation/stack** ^7.6.16
+- **@react-navigation/bottom-tabs** ^7.10.1
 
-### 1. Configurar Backend (API Fake)
+### Estado e Persistência
+- **Context API** (Gerenciamento de estado global)
+- **AsyncStorage** 2.2.0 (Persistência de autenticação)
 
-A API fake simula um servidor REST localmente.
+### UI/UX
+- **@react-native-vector-icons/fontawesome6** ^12.3.0
+- **react-native-safe-area-context** ~5.6.0
 
+### HTTP e Backend
+- **Axios** ^1.13.4 (Cliente HTTP)
+- **JSON Server** ^0.17.4 (API Mock)
+
+## 🛠️ Setup Inicial
+
+### Pré-requisitos
+- Node.js (versão 18+)
+- npm ou yarn
+- Expo CLI
+- Emulador Android/iOS ou Expo Go no dispositivo físico
+
+### Instalação
+
+1. **Clone o repositório**
 ```bash
-# Terminal 1
-npm install
-npm run server
-# O servidor rodará em http://localhost:3000
+git clone <repository-url>
+cd blog-school
 ```
 
-> **Nota:** Para rodar no Android Emulator, o app está configurado para acessar `10.0.2.2:3000`. No iOS ou Web é `localhost:3000`. Se for testar em dispositivo físico, altere o IP em `src/services/api.js`.
+2. **Instale as dependências**
+```bash
+npm install
+```
 
-### 2. Rodar o App
+3. **Configure o Backend (JSON Server)**
 
+O projeto utiliza JSON Server para simular uma API REST.
+
+```bash
+# Terminal 1 - Inicie o servidor
+npm run server
+# Servidor rodará em http://localhost:3000
+```
+
+> **⚠️ Importante:** 
+> - **Android Emulator**: O app está configurado para `10.0.2.2:3000`
+> - **iOS Simulator/Web**: Usa `localhost:3000`
+> - **Dispositivo Físico**: A aplicação tenta obter o IP do dispositivo onde o expo Go está rodando, caso não funcione, altere o IP em `src/services/api.ts` para o IP da sua máquina na rede local.
+
+4. **Inicie o aplicativo**
 ```bash
 # Terminal 2
-npx expo start
+npm start
 ```
 
-## 🔐 Autenticação
+Escolha a plataforma:
+- Pressione `a` para Android
+- Pressione `i` para iOS
+- Pressione `w` para Web
+- Escaneie o QR Code com Expo Go (dispositivo físico)
 
-Para testar, use as credenciais abaixo:
+## 🏗️ Arquitetura da Aplicação
 
-| Perfil | Email | Senha | Acesso |
-|--------|-------|-------|--------|
-| **Professor** | `admin@blog.com` | `123` | Posts (Criar/Edit/Del), Gestão de Prof/Alunos |
-| **Aluno** | `student@blog.com` | `123` | Apenas visualizar Posts |
-
-## 📂 Estrutura de Pastas
+### Estrutura de Diretórios
 
 ```
-src/
-├── api/          # Dados e script do json-server
-├── components/   # Componentes reutilizáveis (Ex: PostCard)
-├── contexts/     # Context API (AuthContext)
-├── navigation/   # Configuração de rotas (Stack/Tabs)
-├── screens/      # Telas do aplicativo
-│   ├── Admin/    # Gestão de Professores/Alunos
-│   ├── Auth/     # Login
-│   ├── Posts/    # Listagem, Detalhe e Edição de Posts
-│   └── Shared/   # Telas compartilhadas (Ex: UserForm)
-├── services/     # Configuração do Axios (api.js) (Suporte a Android/iOS/Web)
-└── theme.js      # Constantes de estilo
+blog-school/
+├── api/
+│   ├── db.json              # Banco de dados JSON Server
+│   └── server.js            # Configuração do servidor com middlewares
+├── src/
+│   ├── components/          # Componentes reutilizáveis
+│   │   └── PostCard.tsx     # Card de post para listagem
+│   ├── contexts/            # Context API
+│   │   └── AuthContext.tsx  # Gerenciamento de autenticação
+│   ├── navigation/          # Configuração de rotas
+│   │   └── AppNavigator.tsx # Stack e Tab Navigation
+│   ├── screens/             # Telas da aplicação
+│   │   ├── Admin/           # Telas administrativas
+│   │   │   └── UsersListScreen.tsx
+│   │   ├── Auth/            # Autenticação
+│   │   │   ├── LoginScreen.tsx
+│   │   │   └── RegisterScreen.tsx
+│   │   ├── Posts/           # Gerenciamento de posts
+│   │   │   ├── PostsListScreen.tsx
+│   │   │   ├── PostDetailScreen.tsx
+│   │   │   └── PostFormScreen.tsx
+│   │   └── Shared/          # Telas compartilhadas
+│   │       ├── ProfileScreen.tsx
+│   │       ├── UserFormScreen.tsx
+│   │       └── UserProfileScreen.tsx
+│   ├── services/
+│   │   └── api.ts           # Configuração Axios
+│   ├── types/
+│   │   └── index.ts         # Definições TypeScript
+│   └── theme.ts             # Constantes de design (cores, espaçamentos)
+├── package.json
+└── tsconfig.json
 ```
 
-## ✨ Atualizações Recentes (Design Refresh)
+### Padrões Arquiteturais
 
-O aplicativo passou por uma reformulação visual para alinhar com o design **Stitch**:
+#### 1. **Context API para Estado Global**
+- `AuthContext`: Gerencia autenticação, usuário logado e persistência de sessão
+- Provê funções: `signIn`, `signUp`, `signOut`
 
--   **Ícones**: Migração para `@react-native-vector-icons/fontawesome6` para um visual mais moderno.
--   **Home**:
-    -   Novo Header com logo e busca.
-    -   Filtros de categoria em estilo "Pill" com sombra.
-    -   Cards de post com imagem de capa e avatar do autor.
-    -   **Pull to Refresh**: Atualize a lista de posts puxando para baixo.
--   **Login**:
-    -   Layout limpo e minimalista.
-    -   Campos com ícones visuais (`envelope`, `lock`).
-    -   Remoção de login social (Google/Apple).
--   **Detalhes do Post**:
-    -   Imagem de destaque imersiva.
-    -   Informações do autor e categoria em destaque.
-    -   Tipografia otimizada para leitura.
+#### 2. **Navegação Híbrida**
+- **Stack Navigator**: Navegação entre telas (Login, Detalhes, Formulários)
+- **Tab Navigator**: Navegação principal (Home, Perfil, Admin)
+- Navegação condicional baseada em role (professor/aluno)
 
-## 🛠️ Scripts Úteis
+#### 3. **Tipagem TypeScript**
+- Interfaces para `User`, `Post`, `AuthContextData`
+- Tipos de navegação para type-safety
 
--   `npm run server`: Inicia o JSON Server (Backend Fake).
--   `npx expo start`: Inicia o bundler do Metro (App).
--   `npx tsc --noEmit`: Verifica erros de tipagem TypeScript.
+#### 4. **Componentização**
+- Componentes reutilizáveis (`PostCard`)
+- Separação de responsabilidades (Screens vs Components)
+
+## ✨ Funcionalidades
+
+### 🔐 Autenticação
+- **Login** com email e senha
+- **[EXTRA]** **Registro** de novos usuários (Professor/Aluno)
+- Persistência de sessão com AsyncStorage
+- Logout
+
+### 📝 Gerenciamento de Posts
+
+#### Para Professores (Admin)
+- ✅ Criar novos posts
+- ✅ Editar posts existentes
+- ✅ Excluir posts
+- ✅ Visualizar todos os posts
+
+#### Para Alunos
+- ✅ Visualizar lista de posts
+- ✅ Filtrar posts por categoria
+- ✅ Buscar posts por título/descrição
+- ✅ Visualizar detalhes completos do post
+
+### 👥 Gerenciamento de Usuários
+
+#### Para Professores (Admin)
+- ✅ Visualizar lista de **Professores**
+- ✅ Visualizar lista de **Alunos**
+- ✅ Criar novos usuários (Professor/Aluno)
+- ✅ Editar informações de usuários
+- ✅ Excluir usuários
+- ✅ **[EXTRA]** Acessar perfil completo de qualquer usuário (Bio, Disciplina)
+
+#### Para Alunos
+- ✅ **[EXTRA]** Visualizar lista de Professores
+- ✅ **[EXTRA]** Acessar perfil completo dos professores (Bio, Disciplina)
+
+### 🧑‍💼 Perfil de Usuário
+
+#### Funcionalidades Gerais
+- ✅ **[EXTRA]** Visualizar próprio perfil (Nome, Email, Role, Bio, Disciplina)
+- ✅ **[EXTRA]** Editar perfil:
+  - Nome
+  - Email
+  - Senha
+  - Bio (todos os usuários)
+  - Disciplina (apenas professores)
+
+#### Visualização de Perfis de Terceiros
+- ✅ **[EXTRA]** Tela dedicada `UserProfileScreen` para visualizar perfis de outros usuários
+- ✅ **[EXTRA]** Exibe: Avatar, Nome, Email, Role, Bio completa, Disciplina (professores)
+- ✅ **[EXTRA]** Acessível clicando em qualquer card de usuário nas listas
+
+### 🎨 UI/UX
+- Design moderno
+- Ícones FontAwesome 6
+- Pull-to-refresh nas listas
+- Busca em tempo real
+- Filtros por categoria (Pills)
+- KeyboardAvoidingView para melhor usabilidade em formulários
+- Safe Area Context para compatibilidade com notch/bordas
+
+## 📖 Guia de Uso
+
+### Credenciais de Teste
+
+| Perfil | Email | Senha | Permissões |
+|--------|-------|-------|------------|
+| **Professor (Admin)** | `admin@blog.com` | `123` | - Criar/Editar/Excluir Posts<br>- Gerenciar Professores e Alunos<br>- Ver perfis de todos os usuários |
+| **Aluno** | `student@blog.com` | `123` | - Visualizar Posts<br>- Ver lista de Professores<br>- Ver perfis dos professores |
+
+### Fluxo de Uso
+
+#### 1. **Login/Registro**
+1. Abra o app
+2. Faça login com as credenciais acima OU
+3. Clique em "Criar nova conta"
+4. Preencha: Nome, Email, Senha, Tipo (Professor/Aluno)
+5. Clique em "Cadastrar"
+
+#### 2. **Navegação Principal (Tabs)**
+- **Home**: Lista de posts com busca e filtros
+- **Perfil**: Visualizar e editar seu perfil
+- **Admin** (apenas Professores): Gerenciar usuários
+
+#### 3. **Posts**
+- **Visualizar**: Clique em qualquer card de post
+- **Criar** (Professor): Botão "+" no canto superior direito da Home
+- **Editar** (Professor): Abra o post → Botão "Editar"
+- **Excluir** (Professor): Abra o post → Botão "Excluir"
+- **Buscar**: Use a barra de busca no topo
+- **Filtrar**: Clique nas categorias (Pills)
+
+#### 4. **Perfil**
+- **Ver seu perfil**: Tab "Perfil"
+- **Editar**: Botão "Editar Informações"
+- **Campos editáveis**:
+  - Nome, Email, Senha (todos)
+  - Bio (todos)
+  - Disciplina (apenas professores)
+
+#### 5. **Gerenciamento de Usuários (Admin)**
+- **Ver Professores**: Clique em "Professores"
+- **Ver Alunos**: Clique em "Alunos"
+- **Criar**: Botão "+ Novo Professor/Aluno"
+- **Editar**: Botão "Editar" no card do usuário
+- **Excluir**: Botão "Excluir" no card do usuário
+- **Ver Perfil Completo**: Clique em qualquer card de usuário
+
+#### 6. **Visualizar Perfis de Outros Usuários**
+1. Acesse a lista de usuários (Professores ou Alunos)
+2. Clique no card de qualquer usuário
+3. Visualize: Nome, Email, Role, Bio completa, Disciplina (se professor)
+4. Clique em "Voltar" para retornar à lista
+
+## 🛠️ Scripts Disponíveis
+
+```bash
+# Desenvolvimento
+npm start              # Inicia Expo Dev Server
+npm run android        # Abre no Android Emulator
+npm run ios            # Abre no iOS Simulator
+npm run web            # Abre no navegador
+
+# Backend
+npm run server         # Inicia JSON Server (porta 3000)
+
+# Verificação
+npx tsc --noEmit       # Verifica erros TypeScript
+```
+
+## 🔧 Configurações Importantes
+
+### API Configuration (`src/services/api.ts`)
+```typescript
+const baseURL = Platform.select({
+  android: 'http://10.0.2.2:3000',  // Android Emulator
+  ios: 'http://localhost:3000',     // iOS Simulator
+  default: 'http://localhost:3000', // Web/outros
+});
+```
+
+### TypeScript Paths (`tsconfig.json`)
+```json
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
+}
+```
+
+## 📝 Notas Técnicas
+
+### Autenticação
+- Token JWT simulado (fake-jwt-token)
+- Persistência via AsyncStorage
+- Middleware de permissões no JSON Server
+
+### Ordenação de Posts
+- Posts ordenados por `createdAt` (mais recente primeiro)
+- Implementado no `PostsListScreen.tsx`
+
+### Roles e Permissões
+- `professor`: Acesso total (CRUD posts, gerenciar usuários)
+- `aluno`: Apenas leitura de posts e visualização de professores
+
+### Formulários
+- Validação de campos obrigatórios
+- KeyboardAvoidingView para evitar sobreposição do teclado
+- Feedback visual com ActivityIndicator durante salvamento
+
+---
+
+**Desenvolvido com ❤️ para educação**

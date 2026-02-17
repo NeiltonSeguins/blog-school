@@ -1,18 +1,22 @@
 {
   "users": [
     {
-      "id": 1,
+      "name": "Professor Admin",
       "email": "admin@blog.com",
       "password": "123",
-      "name": "Professor Admin",
-      "role": "professor"
+      "role": "professor",
+      "bio": "Administrador do blog",
+      "subject": "",
+      "id": 1
     },
     {
-      "id": 2,
+      "name": "Severino",
       "email": "student@blog.com",
       "password": "123",
-      "name": "Aluno Exemplo",
-      "role": "aluno"
+      "role": "aluno",
+      "bio": "Gosto de estudar e tocar guitarra",
+      "subject": "",
+      "id": 2
     },
     {
       "id": 3,
@@ -29,18 +33,13 @@
       "id": 4
     },
     {
-      "id": 1771098265553,
-      "name": "Neilton ",
-      "email": "seg@blog.com",
-      "password": "12345",
-      "role": "professor"
-    },
-    {
-      "id": 1771098302519,
       "name": "Mariana",
       "email": "silva@blog.com",
       "password": "09876",
-      "role": "professor"
+      "role": "professor",
+      "bio": "Gosta de ciências",
+      "subject": "Biologia ",
+      "id": 1771098302519
     },
     {
       "id": 1771098611289,

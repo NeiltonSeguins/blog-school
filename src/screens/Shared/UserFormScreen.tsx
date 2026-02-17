@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, ScrollView } from 'react-native';
+import { Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, ScrollView, KeyboardAvoidingView, Platform, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import api from '../../services/api';
 import { colors, spacing, fontSize } from '../../theme';
@@ -17,6 +17,8 @@ export default function UserFormScreen({ route, navigation }: Props) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [bio, setBio] = useState('');
+  const [subject, setSubject] = useState('');
   const [loading, setLoading] = useState(!!id);
   const [saving, setSaving] = useState(false);
 
@@ -29,10 +31,12 @@ export default function UserFormScreen({ route, navigation }: Props) {
   async function loadUser() {
     try {
       const response = await api.get(`/users/${id}`);
-      const { name, email, password } = response.data;
+      const { name, email, password, bio, subject } = response.data;
       setName(name);
       setEmail(email);
       setPassword(password);
+      if (bio) setBio(bio);
+      if (subject) setSubject(subject);
     } catch (error) {
       Alert.alert('Erro', 'Falha ao carregar dados do usuário.');
       navigation.goBack();
@@ -54,7 +58,9 @@ export default function UserFormScreen({ route, navigation }: Props) {
       name,
       email,
       password,
-      role
+      role,
+      bio,
+      subject
     };
 
     try {
@@ -75,42 +81,71 @@ export default function UserFormScreen({ route, navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
-      <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.headerTitle}>
-          {userType === 'teacher' ? 'Professor' : 'Aluno'}
-        </Text>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={{ flex: 1 }}
+      >
+        <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+          <Text style={styles.headerTitle}>
+            {userType === 'teacher' ? 'Professor' : 'Aluno'}
+          </Text>
 
-        <Text style={styles.label}>Nome</Text>
-        <TextInput
-          style={styles.input}
-          value={name}
-          onChangeText={setName}
-          placeholder="Nome completo"
-        />
+          <Text style={styles.label}>Nome</Text>
+          <TextInput
+            style={styles.input}
+            value={name}
+            onChangeText={setName}
+            placeholder="Nome completo"
+          />
 
-        <Text style={styles.label}>E-mail</Text>
-        <TextInput
-          style={styles.input}
-          value={email}
-          onChangeText={setEmail}
-          placeholder="E-mail de acesso"
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
+          <Text style={styles.label}>E-mail</Text>
+          <TextInput
+            style={styles.input}
+            value={email}
+            onChangeText={setEmail}
+            placeholder="E-mail de acesso"
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
 
-        <Text style={styles.label}>Senha</Text>
-        <TextInput
-          style={styles.input}
-          value={password}
-          onChangeText={setPassword}
-          placeholder="Senha de acesso"
-          secureTextEntry={false}
-        />
+          <Text style={styles.label}>Senha</Text>
+          <TextInput
+            style={styles.input}
+            value={password}
+            onChangeText={setPassword}
+            placeholder="Senha de acesso"
+            secureTextEntry={false}
+          />
 
-        <TouchableOpacity style={styles.button} onPress={handleSave} disabled={saving}>
-          {saving ? <ActivityIndicator color="#FFF" /> : <Text style={styles.buttonText}>Salvar</Text>}
-        </TouchableOpacity>
-      </ScrollView>
+          {/* Bio Field - For everyone */}
+          <Text style={styles.label}>Bio</Text>
+          <TextInput
+            style={[styles.input, styles.textArea]}
+            value={bio}
+            onChangeText={setBio}
+            placeholder="Conte um pouco sobre você"
+            multiline
+            numberOfLines={3}
+          />
+
+          {/* Subject Field - Only for Teachers */}
+          {(userType === 'teacher' || (id && route.params?.userType === 'teacher')) && (
+            <>
+              <Text style={styles.label}>Disciplina</Text>
+              <TextInput
+                style={styles.input}
+                value={subject}
+                onChangeText={setSubject}
+                placeholder="Ex: Matemática, História"
+              />
+            </>
+          )}
+
+          <TouchableOpacity style={styles.button} onPress={handleSave} disabled={saving}>
+            {saving ? <ActivityIndicator color="#FFF" /> : <Text style={styles.buttonText}>Salvar</Text>}
+          </TouchableOpacity>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -123,6 +158,7 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     padding: spacing.m,
+    paddingBottom: 100, // Ensure space for scrolling above keyboard
   },
   headerTitle: {
     fontSize: fontSize.xl,
@@ -145,6 +181,10 @@ const styles = StyleSheet.create({
     padding: spacing.m,
     marginBottom: spacing.l,
     fontSize: fontSize.m,
+  },
+  textArea: {
+    height: 100,
+    textAlignVertical: 'top',
   },
   button: {
     backgroundColor: colors.primary,

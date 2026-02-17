@@ -39,13 +39,20 @@ export default function PostsListScreen({ navigation }: Props) {
 
       const postsData = response.data;
 
-      setPosts(postsData);
+      // Sort posts by date (newest first)
+      const sortedPosts = postsData.sort((a, b) => {
+        const dateA = new Date(a.createdAt).getTime();
+        const dateB = new Date(b.createdAt).getTime();
+        return dateB - dateA; // Descending order (newest first)
+      });
+
+      setPosts(sortedPosts);
 
       // Extract unique categories from posts
-      const uniqueCategories = Array.from(new Set(postsData.map(p => p.category || 'Geral')));
+      const uniqueCategories = Array.from(new Set(sortedPosts.map(p => p.category || 'Geral')));
       setCategories(['Todos', ...uniqueCategories]);
 
-      filterPosts(selectedCategory, searchQuery, postsData);
+      filterPosts(selectedCategory, searchQuery, sortedPosts);
     } catch (error) {
       Alert.alert('Erro', 'Não foi possível carregar os posts.');
     } finally {

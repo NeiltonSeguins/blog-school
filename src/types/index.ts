@@ -4,6 +4,8 @@ export interface User {
   email: string;
   role: 'professor' | 'aluno';
   password?: string; // Optional if we don't always load it
+  bio?: string;
+  subject?: string;
 }
 
 export interface Post {
