@@ -22,8 +22,8 @@ export default function UsersListScreen({ navigation, route }: Props) {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Determine if the current user has permission to edit/add
-  // Only 'teacher' (Admin) can edit/add.
+  // Determina se o usuário atual tem permissão para editar/adicionar
+  // Apenas 'teacher' (Admin) pode editar/adicionar.
   const canEdit = user?.role === 'teacher';
 
   const title = role === 'teacher' ? 'Professores' : 'Alunos';

@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, ScrollView, KeyboardAvoidingView, Platform, Modal, FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAuth } from '../../contexts/AuthContext';
 import { colors, spacing, fontSize } from '../../theme';
 import { RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -16,7 +15,6 @@ interface Props {
   navigation: StackNavigationProp<any>;
 }
 
-// Simple Select Component
 interface SelectProps {
   label: string;
   value: string;
@@ -81,16 +79,13 @@ function SelectGroup({ label, value, placeholder, items, onSelect, loading, disa
 
 export default function PostFormScreen({ route, navigation }: Props) {
   const { id } = route.params || {};
-  const { user } = useAuth();
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
 
-  // Selections
   const [selectedAuthor, setSelectedAuthor] = useState<{ id: number; name: string } | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<{ id: number; name: string } | null>(null);
 
-  // Data lists
   const [teachers, setTeachers] = useState<User[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
 
@@ -110,16 +105,13 @@ export default function PostFormScreen({ route, navigation }: Props) {
 
   async function loadDependencies() {
     try {
-      // Load Teachers
       try {
         const teachersData = await usersService.getTeachers();
         setTeachers(teachersData);
       } catch (e) {
         console.error("Failed to load teachers:", e);
-        // Don't block everything if teachers fail, but author selection will be empty
       }
 
-      // Load Categories
       try {
         const categoriesData = await categoriesService.getAll();
         setCategories(categoriesData);
@@ -141,15 +133,12 @@ export default function PostFormScreen({ route, navigation }: Props) {
       setTitle(post.title);
       setContent(post.content);
 
-      // Match Author
-      let foundTeacher;
+      let foundTeacher: User;
 
-      // 1. Try by teacherId (Best)
       if (post.teacherId) {
         foundTeacher = teachers.find(t => t.id === post.teacherId);
       }
 
-      // 2. Fallback: Try by name (legacy) if not found by ID
       if (!foundTeacher && post.author) {
         foundTeacher = teachers.find(t => t.name === post.author);
       }
@@ -157,24 +146,20 @@ export default function PostFormScreen({ route, navigation }: Props) {
       if (foundTeacher) {
         setSelectedAuthor({ id: foundTeacher.id, name: foundTeacher.name });
       } else if (post.author) {
-        // Just show what we have from legacy string
         setSelectedAuthor({ id: 0, name: post.author });
       }
 
-      // Fetch specific category details if ID exists
       if (post.categoryId) {
         try {
           const categoryDetails = await categoriesService.getCategoryById(post.categoryId);
           setSelectedCategory(categoryDetails);
         } catch (catError) {
           console.error("Failed to fetch category details:", catError);
-          // Fallback: try to find in the static list or keep ID
           const found = categories.find(c => c.id === post.categoryId);
           if (found) setSelectedCategory(found);
           else if (post.category) setSelectedCategory({ id: post.categoryId, name: post.category });
         }
       } else if (post.category) {
-        // Fallback by name if no ID
         const foundCategory = categories.find(c => c.name === post.category);
         if (foundCategory) setSelectedCategory(foundCategory);
       }
@@ -195,7 +180,6 @@ export default function PostFormScreen({ route, navigation }: Props) {
 
     setSaving(true);
 
-    // Prepare data fitting the API expectations
     const data: any = {
       title,
       content,
@@ -206,10 +190,8 @@ export default function PostFormScreen({ route, navigation }: Props) {
 
     try {
       if (id) {
-        // For updates: Send updatedAt
         await postsService.updatePost(id, { ...data, updatedAt: new Date().toISOString() });
       } else {
-        // For creation: Send createdAt
         await postsService.createPost({ ...data, createdAt: new Date().toISOString() });
       }
       navigation.goBack();

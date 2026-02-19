@@ -36,15 +36,8 @@ export default function PostDetailScreen({ route, navigation }: Props) {
       const response = await api.get<Post>(`/posts/${id}`);
       const postData = response.data;
 
-      // Resolve Author Name if teacherId exists AND user is a teacher (to avoid 403)
       if (postData.teacherId && user?.role === 'teacher') {
         try {
-          // We could fetch all teachers or just the one. 
-          // Since we don't have getTeacherById exposed yet or we can use getTeachers and find.
-          // Let's assume we can fetch all for now or add getTeacherById.
-          // Actually, usersService.getTeachers() returns all.
-
-          // Try/Catch specifically for this call as students might get 403
           const teachers = await usersService.getTeachers();
           const teacher = teachers.find(t => t.id === postData.teacherId);
           if (teacher) {
@@ -55,10 +48,8 @@ export default function PostDetailScreen({ route, navigation }: Props) {
         }
       }
 
-      // Resolve Category Name if categoryId exists
       if (postData.categoryId) {
         try {
-          // Fetch all categories to ensure we get the mapped name (label -> name)
           const categories = await categoriesService.getAll();
           const category = categories.find(c => c.id === postData.categoryId);
           if (category) {
@@ -101,7 +92,7 @@ export default function PostDetailScreen({ route, navigation }: Props) {
 
         <View style={styles.contentContainer}>
 
-          {/* Category Pill */}
+          {/* Category */}
           <View style={styles.categoryContainer}>
             <View style={styles.categoryPill}>
               <Text style={styles.categoryText}>{post.category || 'Geral'}</Text>
@@ -182,7 +173,7 @@ const styles = StyleSheet.create({
     color: colors.textLight,
   },
   title: {
-    fontSize: 24, // Explicit size for title
+    fontSize: 24,
     fontWeight: '800',
     color: colors.primary,
     marginBottom: spacing.l,
@@ -216,7 +207,7 @@ const styles = StyleSheet.create({
   },
   content: {
     fontSize: fontSize.l,
-    lineHeight: 28, // Better readability
+    lineHeight: 28,
     color: colors.text,
     paddingBottom: 40,
   }

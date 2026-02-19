@@ -145,7 +145,6 @@ blog-school/
 
 ### 🔐 Autenticação
 - **Login** com email e senha
-- **[EXTRA]** **Registro** de novos usuários (Professor/Aluno)
 - Persistência de sessão com AsyncStorage
 - Logout
 
@@ -153,9 +152,12 @@ blog-school/
 
 #### Para Professores (Admin)
 - ✅ Criar novos posts
-- ✅ Editar posts existentes
+- ✅ Editar posts existentes (Apenas se ele for o autor)
 - ✅ Excluir posts
 - ✅ Visualizar todos os posts
+- ✅ Visualizar lista de posts
+- ✅ Filtrar posts por categoria
+- ✅ Buscar posts por título/descrição
 
 #### Para Alunos
 - ✅ Visualizar lista de posts
@@ -171,27 +173,14 @@ blog-school/
 - ✅ Criar novos usuários (Professor/Aluno)
 - ✅ Editar informações de usuários
 - ✅ Excluir usuários
-- ✅ **[EXTRA]** Acessar perfil completo de qualquer usuário (Bio, Disciplina)
-
-#### Para Alunos
-- ✅ **[EXTRA]** Visualizar lista de Professores
-- ✅ **[EXTRA]** Acessar perfil completo dos professores (Bio, Disciplina)
 
 ### 🧑‍💼 Perfil de Usuário
 
 #### Funcionalidades Gerais
-- ✅ **[EXTRA]** Visualizar próprio perfil (Nome, Email, Role, Bio, Disciplina)
-- ✅ **[EXTRA]** Editar perfil:
+- ✅ Editar perfil (Apenas Admin):
   - Nome
   - Email
   - Senha
-  - Bio (todos os usuários)
-  - Disciplina (apenas professores)
-
-#### Visualização de Perfis de Terceiros
-- ✅ **[EXTRA]** Tela dedicada `UserProfileScreen` para visualizar perfis de outros usuários
-- ✅ **[EXTRA]** Exibe: Avatar, Nome, Email, Role, Bio completa, Disciplina (professores)
-- ✅ **[EXTRA]** Acessível clicando em qualquer card de usuário nas listas
 
 ### 🎨 UI/UX
 - Design moderno
@@ -208,22 +197,19 @@ blog-school/
 
 | Perfil | Email | Senha | Permissões |
 |--------|-------|-------|------------|
-| **Professor (Admin)** | `admin@blog.com` | `123` | - Criar/Editar/Excluir Posts<br>- Gerenciar Professores e Alunos<br>- Ver perfis de todos os usuários |
-| **Aluno** | `student@blog.com` | `123` | - Visualizar Posts<br>- Ver lista de Professores<br>- Ver perfis dos professores |
-
+| **Professor (Admin)** | `professor@educapost.dev` | `senha123` | - Criar/Editar/Excluir Posts<br>- Gerenciar Professores e Alunos<br>- Ver perfis de todos os usuários |
+| **Aluno** | `aluno@educapost.dev` | `senha123` | - Visualizar Posts<br>
 ### Fluxo de Uso
 
 #### 1. **Login/Registro**
 1. Abra o app
-2. Faça login com as credenciais acima OU
-3. Clique em "Criar nova conta"
-4. Preencha: Nome, Email, Senha, Tipo (Professor/Aluno)
-5. Clique em "Cadastrar"
+2. Faça login com as credenciais acima
 
 #### 2. **Navegação Principal (Tabs)**
 - **Home**: Lista de posts com busca e filtros
 - **Perfil**: Visualizar e editar seu perfil
-- **Admin** (apenas Professores): Gerenciar usuários
+- **Lista de professores** (apenas Professores): Gerenciar usuários
+- **Lista de alunos** (apenas Professores): Gerenciar usuários
 
 #### 3. **Posts**
 - **Visualizar**: Clique em qualquer card de post
@@ -235,11 +221,9 @@ blog-school/
 
 #### 4. **Perfil**
 - **Ver seu perfil**: Tab "Perfil"
-- **Editar**: Botão "Editar Informações"
+- **Editar**: Botão "Editar Informações" (Admin)
 - **Campos editáveis**:
   - Nome, Email, Senha (todos)
-  - Bio (todos)
-  - Disciplina (apenas professores)
 
 #### 5. **Gerenciamento de Usuários (Admin)**
 - **Ver Professores**: Clique em "Professores"
@@ -247,13 +231,6 @@ blog-school/
 - **Criar**: Botão "+ Novo Professor/Aluno"
 - **Editar**: Botão "Editar" no card do usuário
 - **Excluir**: Botão "Excluir" no card do usuário
-- **Ver Perfil Completo**: Clique em qualquer card de usuário
-
-#### 6. **Visualizar Perfis de Outros Usuários**
-1. Acesse a lista de usuários (Professores ou Alunos)
-2. Clique no card de qualquer usuário
-3. Visualize: Nome, Email, Role, Bio completa, Disciplina (se professor)
-4. Clique em "Voltar" para retornar à lista
 
 ## 🛠️ Scripts Disponíveis
 
@@ -297,7 +274,6 @@ const baseURL = Platform.select({
 ## 📝 Notas Técnicas
 
 ### Autenticação
-- Token JWT simulado (fake-jwt-token)
 - Persistência via AsyncStorage
 - Middleware de permissões no JSON Server
 
@@ -314,6 +290,3 @@ const baseURL = Platform.select({
 - KeyboardAvoidingView para evitar sobreposição do teclado
 - Feedback visual com ActivityIndicator durante salvamento
 
----
-
-**Desenvolvido com ❤️ para educação**

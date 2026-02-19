@@ -24,7 +24,6 @@ export default function LoginScreen({ navigation }: Props) {
     }
 
     setLoading(true);
-    // Role is now passed to signIn
     const error = await signIn(email, password, role);
     setLoading(false);
 
@@ -46,11 +45,10 @@ export default function LoginScreen({ navigation }: Props) {
             <FontAwesome6 name="graduation-cap" size={40} color={colors.primary} iconStyle="solid" />
           </View>
           <Text style={styles.title}>Bem-vindo(a)</Text>
-          <Text style={styles.subtitle}>Faça login para acessar o EducaBlog</Text>
+          <Text style={styles.subtitle}>Faça login para acessar o EducaPost</Text>
         </View>
 
         <View style={styles.form}>
-          {/* Role Selector */}
           <View style={{ flexDirection: 'row', marginBottom: spacing.m, backgroundColor: '#E0F2FE', borderRadius: 12, padding: 4 }}>
             <TouchableOpacity
               style={{ flex: 1, padding: 10, alignItems: 'center', backgroundColor: role === 'student' ? colors.primary : 'transparent', borderRadius: 8 }}
@@ -108,7 +106,6 @@ export default function LoginScreen({ navigation }: Props) {
 
         </View>
 
-        {/* Keeping helper for dev/demo purposes but making it subtle */}
         <View style={styles.helperContainer}>
           <Text style={styles.helperTitle}>Acesso Rápido (Demo):</Text>
           <Text style={styles.helperText}>Professor: professor@educapost.dev / senha123</Text>
@@ -122,7 +119,7 @@ export default function LoginScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC', // colors.surface if available, else light gray
+    backgroundColor: '#F8FAFC',
   },
   scrollContent: {
     flexGrow: 1,
@@ -137,7 +134,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#E0F2FE', // Light blue
+    backgroundColor: '#E0F2FE',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: spacing.l,

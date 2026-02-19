@@ -42,9 +42,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   async function signIn(email: string, password: string, role: 'student' | 'teacher'): Promise<string | null> {
     try {
       const data = await authService.login(email, password, role);
-
-      // API returns token and user data at the root level of the response object
-      // derived from AuthResponse interface in authService
       const { token } = data;
 
       const userToStore: User = {
@@ -61,7 +58,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       await AsyncStorage.setItem('@BlogSchool:user', JSON.stringify(userToStore));
       await AsyncStorage.setItem('@BlogSchool:token', token);
 
-      return null; // No error
+      return null;
     } catch (error: any) {
       console.error(error);
       return error.response?.data?.message || 'Erro ao realizar login. Verifique suas credenciais.';
@@ -71,16 +68,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   async function refreshUser() {
     if (!user) return;
     try {
-      // Assuming GET /users/:id works and returns the user object
-      // Since we don't have a /me endpoint, we use the ID.
-      // We need to know which endpoint to call based on role, but stored user has role.
       const endpoint = user.role === 'teacher' ? `/teachers/${user.id}` : `/students/${user.id}`;
       const response = await api.get(endpoint);
       const updatedUser: User = {
         id: response.data.id,
         name: response.data.name,
         email: response.data.email,
-        role: user.role // Keep role
+        role: user.role
       };
 
       setUser(updatedUser);

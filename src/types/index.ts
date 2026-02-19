@@ -12,7 +12,7 @@ export interface Post {
   content: string;
   summary?: string;
   author: string;
-  teacherId?: number;        // ID referencing the Teacher who authored the post
+  teacherId?: number;
   categoryId: number;
   createdAt?: string;
   updatedAt?: string;

@@ -5,7 +5,7 @@ export const usersService = {
   getTeachers: async (): Promise<User[]> => {
     try {
       const response = await api.get<any>('/teachers');
-      // Handle both array and { items: ... } response formats
+      // Lida com ambos os formatos de resposta array e { items: ... }
       const data = Array.isArray(response.data) ? response.data : (response.data.items || []);
 
       return data.map((item: any) => ({

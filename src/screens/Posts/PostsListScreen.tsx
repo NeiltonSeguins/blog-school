@@ -13,7 +13,6 @@ import { Post } from '../../types';
 import { StackNavigationProp } from '@react-navigation/stack';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
 
-// Define generic navigation type for now, will refine later
 interface Props {
   navigation: StackNavigationProp<any>;
 }
@@ -39,24 +38,19 @@ export default function PostsListScreen({ navigation }: Props) {
   async function loadData() {
     try {
       setLoading(true);
-
-      // Load Categories first to map names
       const cats = await categoriesService.getAll();
       setCategoriesList(cats);
       setCategories(['Todos', ...cats.map(c => c.name)]);
 
-      // Load Posts
       const data = await postsService.getPosts();
       const postsList = Array.isArray(data) ? data : (data.items || []);
 
-      // Sort posts by date (newest first)
       const sortedPosts = postsList.sort((a, b) => {
         const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
         const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
         return dateB - dateA;
       });
 
-      // Load Teachers to map names - ONLY if user is a teacher (students get 403)
       let teachers: any[] = [];
       if (user?.role === 'teacher') {
         try {
@@ -66,11 +60,10 @@ export default function PostsListScreen({ navigation }: Props) {
         }
       }
 
-      // Map categoryId -> Name AND teacherId -> Name
       const postsWithCategoryNames = sortedPosts.map(post => {
         const cat = cats.find(c => c.id === post.categoryId);
 
-        let authorName = post.author; // Default to existing string
+        let authorName = post.author;
         if (post.teacherId) {
           const teacher = teachers.find(t => t.id === post.teacherId);
           if (teacher) {
@@ -81,7 +74,7 @@ export default function PostsListScreen({ navigation }: Props) {
         return {
           ...post,
           category: cat ? cat.name : (post.category || 'Geral'),
-          author: authorName // Display name
+          author: authorName
         };
       });
 
@@ -125,7 +118,7 @@ export default function PostsListScreen({ navigation }: Props) {
   function toggleSearch() {
     setIsSearchVisible(!isSearchVisible);
     if (isSearchVisible) {
-      handleSearch(''); // Clear search when closing
+      handleSearch('');
     }
   }
 
@@ -252,7 +245,7 @@ const styles = StyleSheet.create({
     gap: spacing.s,
   },
   logoContainer: {
-    backgroundColor: '#E0F2FE', // Light blue background for logo
+    backgroundColor: '#E0F2FE',
     padding: 8,
     borderRadius: 12,
   },
@@ -296,7 +289,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     marginRight: spacing.s,
     borderWidth: 1,
-    borderColor: 'transparent', // Cleaner look
+    borderColor: 'transparent',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,

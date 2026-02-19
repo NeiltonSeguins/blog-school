@@ -13,7 +13,7 @@ interface Props {
 }
 
 export default function UserFormScreen({ route, navigation }: Props) {
-  const { id, userType } = route.params || {}; // userType: 'teacher' | 'student'
+  const { id, userType } = route.params || {};
   const { user, refreshUser } = useAuth();
 
   const [name, setName] = useState('');
@@ -40,7 +40,6 @@ export default function UserFormScreen({ route, navigation }: Props) {
       const { name, email, password } = data;
       setName(name);
       setEmail(email);
-      // Password usually not returned for security, but we leave state empty if so
       if (password) setPassword(password);
     } catch (error) {
       console.error(error);
@@ -64,7 +63,7 @@ export default function UserFormScreen({ route, navigation }: Props) {
       name,
       email,
       password,
-      role, // API might expect 'role' or separate endpoints handle it
+      role,
     };
 
     try {
@@ -82,7 +81,6 @@ export default function UserFormScreen({ route, navigation }: Props) {
         }
       }
 
-      // Refresh auth context if the updated user is the current logged in user
       if (user && user.id === id) {
         await refreshUser();
       }

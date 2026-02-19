@@ -16,7 +16,7 @@ import ProfileScreen from '../screens/Shared/ProfileScreen';
 import UsersListScreen from '../screens/Admin/UsersListScreen';
 import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
 
-// --- Type Definitions ---
+// --- Definição de tipos ---
 export type RootStackParamList = {
   Main: undefined;
   UserForm: { id?: number; userType: 'teacher' | 'student' } | undefined;
@@ -40,7 +40,7 @@ const Stack = createStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<TabParamList>();
 const PostStack = createStackNavigator<PostStackParamList>();
 
-// --- Navigators ---
+// --- Navegadores ---
 
 function PostsStackNavigator() {
   return (
@@ -52,7 +52,6 @@ function PostsStackNavigator() {
   );
 }
 
-// function AdminTabs() { // Renaming to MainTabs or just updating content
 function MainTabs() {
   const { user } = useAuth();
 
