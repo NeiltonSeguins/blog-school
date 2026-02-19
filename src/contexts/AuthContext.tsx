@@ -68,6 +68,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }
 
+  async function refreshUser() {
+    if (!user) return;
+    try {
+      // Assuming GET /users/:id works and returns the user object
+      // Since we don't have a /me endpoint, we use the ID.
+      // We need to know which endpoint to call based on role, but stored user has role.
+      const endpoint = user.role === 'teacher' ? `/teachers/${user.id}` : `/students/${user.id}`;
+      const response = await api.get(endpoint);
+      const updatedUser: User = {
+        id: response.data.id,
+        name: response.data.name,
+        email: response.data.email,
+        role: user.role // Keep role
+      };
+
+      setUser(updatedUser);
+      await AsyncStorage.setItem('@BlogSchool:user', JSON.stringify(updatedUser));
+
+    } catch (error) {
+      console.error("Failed to refresh user data", error);
+    }
+  }
+
   async function signOut() {
     await AsyncStorage.clear();
     setUser(null);
@@ -76,7 +99,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ signed: !!user, user, loading, signIn, signOut }}>
+    <AuthContext.Provider value={{ signed: !!user, user, loading, signIn, signOut, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

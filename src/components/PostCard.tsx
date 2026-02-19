@@ -20,7 +20,13 @@ export default function PostCard({ post, onPress, onEdit, onDelete, canEdit }: P
         <View style={styles.content}>
           <View style={styles.header}>
             {post.category && <Text style={styles.category}>{post.category}</Text>}
-            <Text style={styles.date}>{formatDate(post.createdAt)}</Text>
+            <View style={styles.datesContainer}>
+              {post.updatedAt ? (
+                <Text style={styles.date}>Atualizado: {formatDate(post.updatedAt)}</Text>
+              ) : (
+                <Text style={styles.date}>Criado: {formatDate(post.createdAt)}</Text>
+              )}
+            </View>
           </View>
 
           <Text style={styles.title}>{post.title}</Text>
@@ -32,10 +38,10 @@ export default function PostCard({ post, onPress, onEdit, onDelete, canEdit }: P
           <View style={styles.footer}>
             <View style={styles.authorContainer}>
               <Image
-                source={{ uri: `https://ui-avatars.com/api/?name=${post.author}&background=random` }}
+                source={{ uri: `https://ui-avatars.com/api/?name=${String(post.author)}&background=random` }}
                 style={styles.authorAvatar}
               />
-              <Text style={styles.author}>{post.author}</Text>
+              <Text style={styles.author}>{String(post.author)}</Text>
             </View>
           </View>
         </View>
@@ -83,8 +89,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textTransform: 'uppercase',
   },
+  datesContainer: {
+    alignItems: 'flex-end',
+  },
   date: {
-    fontSize: fontSize.s,
+    fontSize: 10,
     color: colors.textLight,
   },
   title: {

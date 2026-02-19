@@ -97,19 +97,12 @@ export default function UsersListScreen({ navigation, route }: Props) {
         data={users}
         keyExtractor={item => String(item.id)}
         renderItem={({ item }) => (
-          <TouchableOpacity
+          <View
             style={styles.card}
-            onPress={() => navigation.navigate('UserProfile', { userId: item.id })}
           >
             <View style={styles.info}>
               <Text style={styles.name}>{item.name}</Text>
               <Text style={styles.email}>{item.email}</Text>
-              {role === 'teacher' && item.subject ? (
-                <Text style={styles.subject}>Disciplina: {item.subject}</Text>
-              ) : null}
-              {item.bio ? (
-                <Text style={styles.bio} numberOfLines={2}>{item.bio}</Text>
-              ) : null}
             </View>
             {canEdit && (
               <View style={styles.actions}>
@@ -127,7 +120,7 @@ export default function UsersListScreen({ navigation, route }: Props) {
                 </TouchableOpacity>
               </View>
             )}
-          </TouchableOpacity>
+          </View>
         )}
         ListEmptyComponent={<Text style={styles.empty}>{emptyMessage}</Text>}
       />
@@ -181,18 +174,6 @@ const styles = StyleSheet.create({
   email: {
     fontSize: fontSize.s,
     color: colors.textLight,
-  },
-  subject: {
-    fontSize: fontSize.s,
-    color: colors.primary,
-    marginTop: 4,
-    fontWeight: '500',
-  },
-  bio: {
-    fontSize: fontSize.s,
-    color: colors.text,
-    marginTop: 4,
-    fontStyle: 'italic',
   },
   actions: {
     flexDirection: 'row',

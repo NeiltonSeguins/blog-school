@@ -11,7 +11,6 @@ import PostsListScreen from '../screens/Posts/PostsListScreen';
 import PostFormScreen from '../screens/Posts/PostFormScreen';
 import PostDetailScreen from '../screens/Posts/PostDetailScreen';
 import UserFormScreen from '../screens/Shared/UserFormScreen';
-import UserProfileScreen from '../screens/Shared/UserProfileScreen';
 
 import ProfileScreen from '../screens/Shared/ProfileScreen';
 import UsersListScreen from '../screens/Admin/UsersListScreen';
@@ -21,7 +20,6 @@ import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
 export type RootStackParamList = {
   Main: undefined;
   UserForm: { id?: number; userType: 'teacher' | 'student' } | undefined;
-  UserProfile: { userId: number };
   Login: undefined;
 };
 
@@ -136,7 +134,6 @@ function AppStack() {
     <Stack.Navigator id="AppStack" screenOptions={{ headerShown: false }}>
       <Stack.Screen name="Main" component={MainTabs} />
       <Stack.Screen name="UserForm" component={UserFormScreen} options={{ headerShown: true, title: 'Editar' }} />
-      <Stack.Screen name="UserProfile" component={UserProfileScreen} />
     </Stack.Navigator>
   );
 }

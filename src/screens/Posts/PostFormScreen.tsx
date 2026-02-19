@@ -1,16 +1,82 @@
 import { useState, useEffect } from 'react';
-import { Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, ScrollView, View, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, ScrollView, KeyboardAvoidingView, Platform, Modal, FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import api from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { colors, spacing, fontSize } from '../../theme';
-import { formatDate, parseDate } from '../../utils/date';
 import { RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { postsService } from '../../services/postsService';
+import { usersService } from '../../services/usersService';
+import { categoriesService, Category } from '../../services/categoriesService';
+import { User } from '../../types';
+import FontAwesome6 from '@react-native-vector-icons/fontawesome6';
 
 interface Props {
   route: RouteProp<any, any>;
   navigation: StackNavigationProp<any>;
+}
+
+// Simple Select Component
+interface SelectProps {
+  label: string;
+  value: string;
+  placeholder: string;
+  items: { id: number | string; name: string }[];
+  onSelect: (item: any) => void;
+  loading?: boolean;
+  disabled?: boolean;
+}
+
+function SelectGroup({ label, value, placeholder, items, onSelect, loading, disabled }: SelectProps) {
+  const [visible, setVisible] = useState(false);
+
+  return (
+    <View style={{ marginBottom: spacing.l }}>
+      <Text style={styles.label}>{label}</Text>
+      <TouchableOpacity
+        style={[styles.selectButton, disabled && { backgroundColor: '#F3F4F6', opacity: 0.7 }]}
+        onPress={() => !disabled && setVisible(true)}
+        disabled={disabled}
+      >
+        <Text style={[styles.selectButtonText, !value && { color: colors.textLight }]}>
+          {value || placeholder}
+        </Text>
+        {loading ? (
+          <ActivityIndicator size="small" color={colors.primary} />
+        ) : (
+          !disabled && <FontAwesome6 name="chevron-down" size={16} color={colors.textLight} iconStyle="solid" />
+        )}
+      </TouchableOpacity>
+
+      <Modal visible={visible} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Selecione {label}</Text>
+              <TouchableOpacity onPress={() => setVisible(false)}>
+                <FontAwesome6 name="xmark" size={24} color={colors.text} iconStyle="solid" />
+              </TouchableOpacity>
+            </View>
+            <FlatList
+              data={items}
+              keyExtractor={(item) => String(item.id)}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.modalItem}
+                  onPress={() => {
+                    onSelect(item);
+                    setVisible(false);
+                  }}
+                >
+                  <Text style={styles.modalItemText}>{item.name}</Text>
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        </View>
+      </Modal>
+    </View>
+  );
 }
 
 export default function PostFormScreen({ route, navigation }: Props) {
@@ -18,30 +84,101 @@ export default function PostFormScreen({ route, navigation }: Props) {
   const { user } = useAuth();
 
   const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
   const [content, setContent] = useState('');
-  const [author, setAuthor] = useState(user?.name || '');
-  const [category, setCategory] = useState('');
-  const [createdAt, setCreatedAt] = useState(formatDate(new Date().toISOString()));
+
+  // Selections
+  const [selectedAuthor, setSelectedAuthor] = useState<{ id: number; name: string } | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<{ id: number; name: string } | null>(null);
+
+  // Data lists
+  const [teachers, setTeachers] = useState<User[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+
   const [loading, setLoading] = useState(!!id);
+  const [loadingData, setLoadingData] = useState(true);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (id) {
+    loadDependencies();
+  }, []);
+
+  useEffect(() => {
+    if (id && !loadingData) {
       loadPost();
     }
-  }, [id]);
+  }, [id, loadingData]);
+
+  async function loadDependencies() {
+    try {
+      // Load Teachers
+      try {
+        const teachersData = await usersService.getTeachers();
+        setTeachers(teachersData);
+      } catch (e) {
+        console.error("Failed to load teachers:", e);
+        // Don't block everything if teachers fail, but author selection will be empty
+      }
+
+      // Load Categories
+      try {
+        const categoriesData = await categoriesService.getAll();
+        setCategories(categoriesData);
+      } catch (e) {
+        console.error("Failed to load categories:", e);
+      }
+
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Erro', 'Ocorreu um erro ao carregar dados iniciais.');
+    } finally {
+      setLoadingData(false);
+    }
+  }
 
   async function loadPost() {
     try {
-      const response = await api.get(`/posts/${id}`);
-      const { title, description, content, author, category, createdAt } = response.data;
-      setTitle(title);
-      setDescription(description);
-      setContent(content);
-      if (author) setAuthor(author);
-      if (category) setCategory(category);
-      if (createdAt) setCreatedAt(formatDate(createdAt));
+      const post = await postsService.getPostById(id);
+      setTitle(post.title);
+      setContent(post.content);
+
+      // Match Author
+      let foundTeacher;
+
+      // 1. Try by teacherId (Best)
+      if (post.teacherId) {
+        foundTeacher = teachers.find(t => t.id === post.teacherId);
+      }
+
+      // 2. Fallback: Try by name (legacy) if not found by ID
+      if (!foundTeacher && post.author) {
+        foundTeacher = teachers.find(t => t.name === post.author);
+      }
+
+      if (foundTeacher) {
+        setSelectedAuthor({ id: foundTeacher.id, name: foundTeacher.name });
+      } else if (post.author) {
+        // Just show what we have from legacy string
+        setSelectedAuthor({ id: 0, name: post.author });
+      }
+
+      // Fetch specific category details if ID exists
+      if (post.categoryId) {
+        try {
+          const categoryDetails = await categoriesService.getCategoryById(post.categoryId);
+          setSelectedCategory(categoryDetails);
+        } catch (catError) {
+          console.error("Failed to fetch category details:", catError);
+          // Fallback: try to find in the static list or keep ID
+          const found = categories.find(c => c.id === post.categoryId);
+          if (found) setSelectedCategory(found);
+          else if (post.category) setSelectedCategory({ id: post.categoryId, name: post.category });
+        }
+      } else if (post.category) {
+        // Fallback by name if no ID
+        const foundCategory = categories.find(c => c.name === post.category);
+        if (foundCategory) setSelectedCategory(foundCategory);
+      }
+
     } catch (error) {
       Alert.alert('Erro', 'Falha ao carregar dados do post.');
       navigation.goBack();
@@ -51,36 +188,40 @@ export default function PostFormScreen({ route, navigation }: Props) {
   }
 
   async function handleSave() {
-    if (!title || !description || !content) {
-      Alert.alert('Atenção', 'Preencha todos os campos.');
+    if (!title || !content || !selectedAuthor || !selectedCategory) {
+      Alert.alert('Atenção', 'Preencha todos os campos, incluindo Autor e Categoria.');
       return;
     }
 
     setSaving(true);
-    const data = {
+
+    // Prepare data fitting the API expectations
+    const data: any = {
       title,
-      description,
       content,
-      author: author || user?.name || 'Professor',
-      category: category || 'Geral',
-      createdAt: parseDate(createdAt)
+      author: selectedAuthor.name,
+      teacherId: selectedAuthor.id,
+      categoryId: selectedCategory.id,
     };
 
     try {
       if (id) {
-        await api.put(`/posts/${id}`, data);
+        // For updates: Send updatedAt
+        await postsService.updatePost(id, { ...data, updatedAt: new Date().toISOString() });
       } else {
-        await api.post('/posts', data);
+        // For creation: Send createdAt
+        await postsService.createPost({ ...data, createdAt: new Date().toISOString() });
       }
       navigation.goBack();
     } catch (error) {
+      console.error(error);
       Alert.alert('Erro', 'Falha ao salvar o post.');
     } finally {
       setSaving(false);
     }
   }
 
-  if (loading) return <ActivityIndicator size="large" color={colors.primary} style={{ flex: 1 }} />;
+  if (loading || loadingData) return <ActivityIndicator size="large" color={colors.primary} style={{ flex: 1 }} />;
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
@@ -100,50 +241,25 @@ export default function PostFormScreen({ route, navigation }: Props) {
             placeholder="Título do post"
           />
 
-          <Text style={styles.label}>Autor</Text>
-          <TextInput
-            style={styles.input}
-            value={author}
-            onChangeText={setAuthor}
-            placeholder="Nome do autor"
+          <SelectGroup
+            label="Autor"
+            value={selectedAuthor?.name || ''}
+            placeholder="Selecione o autor"
+            items={teachers.map(t => ({ id: t.id, name: t.name }))}
+            onSelect={setSelectedAuthor}
+            loading={loadingData}
+            disabled={!!id} // Disable if editing
           />
 
-          <Text style={styles.label}>Categoria</Text>
-          <TextInput
-            style={styles.input}
-            value={category}
-            onChangeText={setCategory}
-            placeholder="Ex: Tecnologia, Carreira..."
+          <SelectGroup
+            label="Categoria"
+            value={selectedCategory?.name || ''}
+            placeholder="Selecione a categoria"
+            items={categories}
+            onSelect={setSelectedCategory}
+            loading={loadingData}
           />
 
-          <View style={styles.chipsContainer}>
-            {['Carreira', 'Estudos', 'Tecnologia', 'Ciências'].map((item) => (
-              <TouchableOpacity
-                key={item}
-                style={[styles.chip, category === item && styles.chipActive]}
-                onPress={() => setCategory(item)}
-              >
-                <Text style={[styles.chipText, category === item && styles.chipTextActive]}>{item}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          <Text style={styles.label}>Data de Criação</Text>
-          <TextInput
-            style={styles.input}
-            value={createdAt}
-            onChangeText={setCreatedAt}
-            placeholder="DD/MM/AAAA"
-          />
-
-          <Text style={styles.label}>Resumo</Text>
-          <TextInput
-            style={styles.input}
-            value={description}
-            onChangeText={setDescription}
-            placeholder="Breve descrição"
-            multiline
-          />
 
           <Text style={styles.label}>Conteúdo</Text>
           <TextInput
@@ -195,31 +311,20 @@ const styles = StyleSheet.create({
     marginBottom: spacing.l,
     fontSize: fontSize.m,
   },
-  chipsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.s,
-    marginBottom: spacing.l,
-  },
-  chip: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    backgroundColor: colors.surface,
+  selectButton: {
+    backgroundColor: '#FFF',
     borderWidth: 1,
     borderColor: colors.border,
+    borderRadius: 8,
+    padding: spacing.m,
+    marginBottom: spacing.l,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  chipActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  chipText: {
-    fontSize: fontSize.s,
-    color: colors.textLight,
-  },
-  chipTextActive: {
-    color: '#FFF',
-    fontWeight: 'bold',
+  selectButtonText: {
+    fontSize: fontSize.m,
+    color: colors.text,
   },
   textArea: {
     height: 150,
@@ -236,5 +341,40 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: fontSize.l,
     fontWeight: 'bold',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: colors.background,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    padding: spacing.m,
+    maxHeight: '70%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.m,
+    paddingBottom: spacing.s,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  modalTitle: {
+    fontSize: fontSize.l,
+    fontWeight: 'bold',
+    color: colors.primary,
+  },
+  modalItem: {
+    paddingVertical: spacing.m,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  modalItemText: {
+    fontSize: fontSize.m,
+    color: colors.text,
   }
 });

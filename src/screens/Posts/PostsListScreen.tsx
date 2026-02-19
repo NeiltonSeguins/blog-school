@@ -5,6 +5,8 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../services/api';
 import { postsService } from '../../services/postsService';
+import { categoriesService } from '../../services/categoriesService';
+import { usersService } from '../../services/usersService';
 import { colors, spacing, fontSize } from '../../theme';
 import PostCard from '../../components/PostCard';
 import { Post } from '../../types';
@@ -25,42 +27,70 @@ export default function PostsListScreen({ navigation }: Props) {
   const [isSearchVisible, setIsSearchVisible] = useState(false);
   const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
 
+  const [categoriesList, setCategoriesList] = useState<{ id: number; name: string }[]>([]);
   const [categories, setCategories] = useState<string[]>(['Todos']);
 
   useFocusEffect(
     useCallback(() => {
-      fetchPosts();
+      loadData();
     }, [])
   );
 
-
-  async function fetchPosts() {
+  async function loadData() {
     try {
       setLoading(true);
-      // Use service instead of direct api call
-      const data = await postsService.getPosts();
 
-      // API returns { total, items: [...] } based on service definition
-      // If items is undefined, fallback to empty array (or data itself if it turns out to be an array)
+      // Load Categories first to map names
+      const cats = await categoriesService.getAll();
+      setCategoriesList(cats);
+      setCategories(['Todos', ...cats.map(c => c.name)]);
+
+      // Load Posts
+      const data = await postsService.getPosts();
       const postsList = Array.isArray(data) ? data : (data.items || []);
 
       // Sort posts by date (newest first)
       const sortedPosts = postsList.sort((a, b) => {
         const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
         const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-        return dateB - dateA; // Descending order (newest first)
+        return dateB - dateA;
       });
 
-      setPosts(sortedPosts);
+      // Load Teachers to map names - ONLY if user is a teacher (students get 403)
+      let teachers: any[] = [];
+      if (user?.role === 'teacher') {
+        try {
+          teachers = await usersService.getTeachers();
+        } catch (error) {
+          console.log("Could not load teachers for mapping");
+        }
+      }
 
-      // Extract unique categories from posts
-      const uniqueCategories = Array.from(new Set(sortedPosts.map(p => p.category || 'Geral')));
-      setCategories(['Todos', ...uniqueCategories]);
+      // Map categoryId -> Name AND teacherId -> Name
+      const postsWithCategoryNames = sortedPosts.map(post => {
+        const cat = cats.find(c => c.id === post.categoryId);
 
-      filterPosts(selectedCategory, searchQuery, sortedPosts);
+        let authorName = post.author; // Default to existing string
+        if (post.teacherId) {
+          const teacher = teachers.find(t => t.id === post.teacherId);
+          if (teacher) {
+            authorName = teacher.name;
+          }
+        }
+
+        return {
+          ...post,
+          category: cat ? cat.name : (post.category || 'Geral'),
+          author: authorName // Display name
+        };
+      });
+
+      setPosts(postsWithCategoryNames);
+      filterPosts(selectedCategory, searchQuery, postsWithCategoryNames);
+
     } catch (error) {
       console.error(error);
-      Alert.alert('Erro', 'Não foi possível carregar os posts.');
+      Alert.alert('Erro', 'Não foi possível carregar os dados.');
     } finally {
       setLoading(false);
     }
@@ -105,8 +135,8 @@ export default function PostsListScreen({ navigation }: Props) {
       {
         text: 'Excluir', style: 'destructive', onPress: async () => {
           try {
-            await api.delete(`/ posts / ${id} `);
-            fetchPosts();
+            await api.delete(`/posts/${id}`);
+            loadData();
           } catch (error) {
             Alert.alert('Erro', 'Não foi possível excluir.');
           }
@@ -191,13 +221,13 @@ export default function PostsListScreen({ navigation }: Props) {
             onPress={() => navigation.navigate('PostDetail', { id: item.id })}
             onEdit={() => navigation.navigate('PostForm', { id: item.id })}
             onDelete={() => handleDelete(item.id)}
-            canEdit={isProfessor}
+            canEdit={user?.role === 'teacher' && (!item.teacherId || item.teacherId === user?.id)}
           />
         )}
         contentContainerStyle={{ paddingBottom: 80 }}
         ListEmptyComponent={<Text style={styles.empty}>Nenhum post encontrado.</Text>}
         refreshing={loading}
-        onRefresh={fetchPosts}
+        onRefresh={loadData}
       />
     </SafeAreaView>
   );

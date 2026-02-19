@@ -2,7 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, Alert, Dimensions, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import api from '../../services/api';
+import { usersService } from '../../services/usersService';
+import { categoriesService } from '../../services/categoriesService';
 import { formatDate } from '../../utils/date';
+import { useAuth } from '../../contexts/AuthContext';
 import { colors, spacing, fontSize } from '../../theme';
 import { Post } from '../../types';
 import { RouteProp } from '@react-navigation/native';
@@ -18,6 +21,7 @@ const { width } = Dimensions.get('window');
 
 export default function PostDetailScreen({ route, navigation }: Props) {
   const { id } = route.params || {};
+  const { user } = useAuth();
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -30,7 +34,42 @@ export default function PostDetailScreen({ route, navigation }: Props) {
   async function fetchPost() {
     try {
       const response = await api.get<Post>(`/posts/${id}`);
-      setPost(response.data);
+      const postData = response.data;
+
+      // Resolve Author Name if teacherId exists AND user is a teacher (to avoid 403)
+      if (postData.teacherId && user?.role === 'teacher') {
+        try {
+          // We could fetch all teachers or just the one. 
+          // Since we don't have getTeacherById exposed yet or we can use getTeachers and find.
+          // Let's assume we can fetch all for now or add getTeacherById.
+          // Actually, usersService.getTeachers() returns all.
+
+          // Try/Catch specifically for this call as students might get 403
+          const teachers = await usersService.getTeachers();
+          const teacher = teachers.find(t => t.id === postData.teacherId);
+          if (teacher) {
+            postData.author = teacher.name;
+          }
+        } catch (error) {
+          console.log("Failed to resolve teacher name", error);
+        }
+      }
+
+      // Resolve Category Name if categoryId exists
+      if (postData.categoryId) {
+        try {
+          // Fetch all categories to ensure we get the mapped name (label -> name)
+          const categories = await categoriesService.getAll();
+          const category = categories.find(c => c.id === postData.categoryId);
+          if (category) {
+            postData.category = category.name;
+          }
+        } catch (error) {
+          console.log("Failed to resolve category name", error);
+        }
+      }
+
+      setPost(postData);
     } catch (error) {
       Alert.alert('Erro', 'Não foi possível carregar o post.');
       navigation.goBack();

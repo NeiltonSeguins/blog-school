@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, ScrollView, KeyboardAvoidingView, Platform, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import api from '../../services/api';
+import { usersService } from '../../services/usersService';
+import { useAuth } from '../../contexts/AuthContext';
 import { colors, spacing, fontSize } from '../../theme';
 import { RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -13,12 +14,11 @@ interface Props {
 
 export default function UserFormScreen({ route, navigation }: Props) {
   const { id, userType } = route.params || {}; // userType: 'teacher' | 'student'
+  const { user, refreshUser } = useAuth();
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [bio, setBio] = useState('');
-  const [subject, setSubject] = useState('');
   const [loading, setLoading] = useState(!!id);
   const [saving, setSaving] = useState(false);
 
@@ -30,14 +30,20 @@ export default function UserFormScreen({ route, navigation }: Props) {
 
   async function loadUser() {
     try {
-      const response = await api.get(`/users/${id}`);
-      const { name, email, password, bio, subject } = response.data;
+      let data;
+      if (userType === 'teacher') {
+        data = await usersService.getTeacherById(id);
+      } else {
+        data = await usersService.getStudentById(id);
+      }
+
+      const { name, email, password } = data;
       setName(name);
       setEmail(email);
-      setPassword(password);
-      if (bio) setBio(bio);
-      if (subject) setSubject(subject);
+      // Password usually not returned for security, but we leave state empty if so
+      if (password) setPassword(password);
     } catch (error) {
+      console.error(error);
       Alert.alert('Erro', 'Falha ao carregar dados do usuário.');
       navigation.goBack();
     } finally {
@@ -54,23 +60,36 @@ export default function UserFormScreen({ route, navigation }: Props) {
     setSaving(true);
     const role = userType === 'teacher' ? 'professor' : 'aluno';
 
-    const data = {
+    const data: any = {
       name,
       email,
       password,
-      role,
-      bio,
-      subject
+      role, // API might expect 'role' or separate endpoints handle it
     };
 
     try {
       if (id) {
-        await api.put(`/users/${id}`, data);
+        if (userType === 'teacher') {
+          await usersService.updateTeacher(id, data);
+        } else {
+          await usersService.updateStudent(id, data);
+        }
       } else {
-        await api.post('/users', data);
+        if (userType === 'teacher') {
+          await usersService.createTeacher(data);
+        } else {
+          await usersService.createStudent(data);
+        }
       }
+
+      // Refresh auth context if the updated user is the current logged in user
+      if (user && user.id === id) {
+        await refreshUser();
+      }
+
       navigation.goBack();
     } catch (error) {
+      console.error(error);
       Alert.alert('Erro', 'Falha ao salvar o usuário.');
     } finally {
       setSaving(false);
@@ -117,30 +136,6 @@ export default function UserFormScreen({ route, navigation }: Props) {
             secureTextEntry={false}
           />
 
-          {/* Bio Field - For everyone */}
-          <Text style={styles.label}>Bio</Text>
-          <TextInput
-            style={[styles.input, styles.textArea]}
-            value={bio}
-            onChangeText={setBio}
-            placeholder="Conte um pouco sobre você"
-            multiline
-            numberOfLines={3}
-          />
-
-          {/* Subject Field - Only for Teachers */}
-          {(userType === 'teacher' || (id && route.params?.userType === 'teacher')) && (
-            <>
-              <Text style={styles.label}>Disciplina</Text>
-              <TextInput
-                style={styles.input}
-                value={subject}
-                onChangeText={setSubject}
-                placeholder="Ex: Matemática, História"
-              />
-            </>
-          )}
-
           <TouchableOpacity style={styles.button} onPress={handleSave} disabled={saving}>
             {saving ? <ActivityIndicator color="#FFF" /> : <Text style={styles.buttonText}>Salvar</Text>}
           </TouchableOpacity>
@@ -158,7 +153,7 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     padding: spacing.m,
-    paddingBottom: 100, // Ensure space for scrolling above keyboard
+    paddingBottom: 100,
   },
   headerTitle: {
     fontSize: fontSize.xl,

@@ -29,7 +29,7 @@ export const postsService = {
       const response = await api.get<Post>(`/posts/${id}`);
       return response.data;
     } catch (error) {
-       console.error(`PostsService GetPostById (${id}) Error:`, error);
+      console.error(`PostsService GetPostById (${id}) Error:`, error);
       throw error;
     }
   },
@@ -37,9 +37,29 @@ export const postsService = {
   searchPosts: async (query: string): Promise<Post[]> => {
     try {
       const response = await api.get(`/posts/search`, { params: { q: query } });
-      return response.data; 
+      return response.data;
     } catch (error) {
       console.error("PostsService SearchPosts Error:", error);
+      throw error;
+    }
+  },
+
+  createPost: async (data: Omit<Post, 'id'>): Promise<Post> => {
+    try {
+      const response = await api.post<Post>('/posts', data);
+      return response.data;
+    } catch (error) {
+      console.error("PostsService CreatePost Error:", error);
+      throw error;
+    }
+  },
+
+  updatePost: async (id: number, data: Partial<Post>): Promise<Post> => {
+    try {
+      const response = await api.put<Post>(`/posts/${id}`, data);
+      return response.data;
+    } catch (error) {
+      console.error(`PostsService UpdatePost (${id}) Error:`, error);
       throw error;
     }
   }
