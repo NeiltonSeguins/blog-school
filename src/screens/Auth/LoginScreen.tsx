@@ -24,13 +24,16 @@ export default function LoginScreen({ navigation }: Props) {
     }
 
     setLoading(true);
-    const error = await signIn(email, password);
+    // Role is now passed to signIn
+    const error = await signIn(email, password, role);
     setLoading(false);
 
     if (error) {
       Alert.alert('Erro no login', error);
     }
   }
+
+  const [role, setRole] = useState<'student' | 'teacher'>('student');
 
   return (
     <KeyboardAvoidingView
@@ -47,6 +50,22 @@ export default function LoginScreen({ navigation }: Props) {
         </View>
 
         <View style={styles.form}>
+          {/* Role Selector */}
+          <View style={{ flexDirection: 'row', marginBottom: spacing.m, backgroundColor: '#E0F2FE', borderRadius: 12, padding: 4 }}>
+            <TouchableOpacity
+              style={{ flex: 1, padding: 10, alignItems: 'center', backgroundColor: role === 'student' ? colors.primary : 'transparent', borderRadius: 8 }}
+              onPress={() => setRole('student')}
+            >
+              <Text style={{ color: role === 'student' ? '#FFF' : colors.primary, fontWeight: 'bold' }}>Aluno</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{ flex: 1, padding: 10, alignItems: 'center', backgroundColor: role === 'teacher' ? colors.primary : 'transparent', borderRadius: 8 }}
+              onPress={() => setRole('teacher')}
+            >
+              <Text style={{ color: role === 'teacher' ? '#FFF' : colors.primary, fontWeight: 'bold' }}>Professor</Text>
+            </TouchableOpacity>
+          </View>
+
           <View style={styles.inputContainer}>
             <FontAwesome6 name="envelope" size={20} color={colors.textLight} iconStyle="solid" style={styles.inputIcon} />
             <TextInput
@@ -87,22 +106,13 @@ export default function LoginScreen({ navigation }: Props) {
             )}
           </TouchableOpacity>
 
-          <View style={styles.dividerContainer}>
-            <View style={styles.divider} />
-            <Text style={styles.dividerText}>OU</Text>
-            <View style={styles.divider} />
-          </View>
-
-          <TouchableOpacity style={styles.registerButton} onPress={() => navigation.navigate('Register')}>
-            <Text style={styles.registerButtonText}>Criar nova conta</Text>
-          </TouchableOpacity>
         </View>
 
         {/* Keeping helper for dev/demo purposes but making it subtle */}
         <View style={styles.helperContainer}>
           <Text style={styles.helperTitle}>Acesso Rápido (Demo):</Text>
-          <Text style={styles.helperText}>Admin: admin@blog.com / 123</Text>
-          <Text style={styles.helperText}>Aluno: student@blog.com / 123</Text>
+          <Text style={styles.helperText}>Professor: professor@educapost.dev / senha123</Text>
+          <Text style={styles.helperText}>Aluno: aluno@educapost.dev / senha123</Text>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>

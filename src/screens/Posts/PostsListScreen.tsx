@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../services/api';
+import { postsService } from '../../services/postsService';
 import { colors, spacing, fontSize } from '../../theme';
 import PostCard from '../../components/PostCard';
 import { Post } from '../../types';
@@ -32,17 +33,21 @@ export default function PostsListScreen({ navigation }: Props) {
     }, [])
   );
 
+
   async function fetchPosts() {
     try {
       setLoading(true);
-      const response = await api.get<Post[]>('/posts');
+      // Use service instead of direct api call
+      const data = await postsService.getPosts();
 
-      const postsData = response.data;
+      // API returns { total, items: [...] } based on service definition
+      // If items is undefined, fallback to empty array (or data itself if it turns out to be an array)
+      const postsList = Array.isArray(data) ? data : (data.items || []);
 
       // Sort posts by date (newest first)
-      const sortedPosts = postsData.sort((a, b) => {
-        const dateA = new Date(a.createdAt).getTime();
-        const dateB = new Date(b.createdAt).getTime();
+      const sortedPosts = postsList.sort((a, b) => {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
         return dateB - dateA; // Descending order (newest first)
       });
 
@@ -54,6 +59,7 @@ export default function PostsListScreen({ navigation }: Props) {
 
       filterPosts(selectedCategory, searchQuery, sortedPosts);
     } catch (error) {
+      console.error(error);
       Alert.alert('Erro', 'Não foi possível carregar os posts.');
     } finally {
       setLoading(false);
@@ -113,7 +119,7 @@ export default function PostsListScreen({ navigation }: Props) {
     return <ActivityIndicator size="large" color={colors.primary} style={{ flex: 1 }} />;
   }
 
-  const isProfessor = user?.role === 'professor';
+  const isProfessor = user?.role === 'teacher';
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>

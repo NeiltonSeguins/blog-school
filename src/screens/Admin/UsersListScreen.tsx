@@ -2,7 +2,6 @@ import { useState, useCallback } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
-import api from '../../services/api';
 import { colors, spacing, fontSize } from '../../theme';
 import { User } from '../../types';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -14,21 +13,22 @@ interface Props {
   route: RouteProp<any, any>;
 }
 
+import { usersService } from '../../services/usersService';
+
 export default function UsersListScreen({ navigation, route }: Props) {
   const { user } = useAuth();
-  const { role } = route.params as { role: 'professor' | 'aluno' };
+  const { role } = route.params as { role: 'teacher' | 'student' };
 
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Determine if the current user has permission to edit/add
-  // Only 'professor' (Admin) can edit/add.
-  // And they can edit/add both professors and students.
-  const canEdit = user?.role === 'professor';
+  // Only 'teacher' (Admin) can edit/add.
+  const canEdit = user?.role === 'teacher';
 
-  const title = role === 'professor' ? 'Professores' : 'Alunos';
-  const emptyMessage = role === 'professor' ? 'Nenhum professor encontrado.' : 'Nenhum aluno encontrado.';
-  const userTypeParam = role === 'professor' ? 'teacher' : 'student';
+  const title = role === 'teacher' ? 'Professores' : 'Alunos';
+  const emptyMessage = role === 'teacher' ? 'Nenhum professor encontrado.' : 'Nenhum aluno encontrado.';
+  const userTypeParam = role;
 
   useFocusEffect(
     useCallback(() => {
@@ -39,9 +39,17 @@ export default function UsersListScreen({ navigation, route }: Props) {
   async function fetchUsers() {
     try {
       setLoading(true);
-      const response = await api.get<User[]>(`/users?role=${role}`);
-      setUsers(response.data);
+      let data: User[] = [];
+
+      if (role === 'teacher') {
+        data = await usersService.getTeachers();
+      } else {
+        data = await usersService.getStudents();
+      }
+
+      setUsers(data);
     } catch (error) {
+      console.error(error);
       Alert.alert('Erro', `Não foi possível carregar os ${title.toLowerCase()}.`);
     } finally {
       setLoading(false);
@@ -54,7 +62,11 @@ export default function UsersListScreen({ navigation, route }: Props) {
       {
         text: 'Excluir', style: 'destructive', onPress: async () => {
           try {
-            await api.delete(`/users/${id}`);
+            if (role === 'teacher') {
+              await usersService.deleteTeacher(id);
+            } else {
+              await usersService.deleteStudent(id);
+            }
             fetchUsers();
           } catch (error) {
             Alert.alert('Erro', 'Não foi possível excluir.');
@@ -70,14 +82,14 @@ export default function UsersListScreen({ navigation, route }: Props) {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
-      <Text style={styles.headerTitle}>{role === 'professor' ? 'Lista de Professores' : 'Lista de Alunos'}</Text>
+      <Text style={styles.headerTitle}>{role === 'teacher' ? 'Lista de Professores' : 'Lista de Alunos'}</Text>
 
       {canEdit && (
         <TouchableOpacity
           style={styles.fab}
           onPress={() => navigation.navigate('UserForm', { userType: userTypeParam })}
         >
-          <Text style={styles.fabText}>+ Novo {role === 'professor' ? 'Professor' : 'Aluno'}</Text>
+          <Text style={styles.fabText}>+ Novo {role === 'teacher' ? 'Professor' : 'Aluno'}</Text>
         </TouchableOpacity>
       )}
 
@@ -92,7 +104,7 @@ export default function UsersListScreen({ navigation, route }: Props) {
             <View style={styles.info}>
               <Text style={styles.name}>{item.name}</Text>
               <Text style={styles.email}>{item.email}</Text>
-              {role === 'professor' && item.subject ? (
+              {role === 'teacher' && item.subject ? (
                 <Text style={styles.subject}>Disciplina: {item.subject}</Text>
               ) : null}
               {item.bio ? (

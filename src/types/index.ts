@@ -2,28 +2,29 @@ export interface User {
   id: number;
   name: string;
   email: string;
-  role: 'professor' | 'aluno';
-  password?: string; // Optional if we don't always load it
-  bio?: string;
-  subject?: string;
+  role: 'student' | 'teacher';
+  password?: string; // Opcional se não carregarmos sempre
+  bio?: string;     // Opcional se não estiver na resposta da API, mas mantido por compatibilidade se necessário
+  subject?: string; // Opcional se não estiver na resposta da API, mas mantido por compatibilidade se necessário
 }
 
 export interface Post {
   id: number;
   title: string;
-  description: string;
   content: string;
+  summary?: string;
   author: string;
-  createdAt: string;
+  categoryId: number;
+  createdAt?: string;
 
   category?: string;
+  description?: string;
 }
 
 export interface AuthContextData {
   signed: boolean;
   user: User | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<string | null>;
+  signIn: (email: string, password: string, role: 'student' | 'teacher') => Promise<string | null>;
   signOut: () => void;
-  signUp: (name: string, email: string, password: string, role: string) => Promise<string | null>;
 }

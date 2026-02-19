@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import api from '../services/api';
+import api, { setLogoutAction } from '../services/api';
+import { authService } from '../services/authService';
 import { User, AuthContextData } from '../types';
 
 interface AuthProviderProps {
@@ -14,6 +15,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Integração para logout automático via interceptor
+    setLogoutAction(() => {
+      signOut();
+    });
+
     loadStorageData();
   }, []);
 
@@ -33,50 +39,44 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }
 
-  async function signUp(name: string, email: string, password: string, role: string): Promise<string | null> {
+  async function signIn(email: string, password: string, role: 'student' | 'teacher'): Promise<string | null> {
     try {
-      const response = await api.post('/register', { name, email, password, role });
-      const { user, token } = response.data;
+      const data = await authService.login(email, password, role);
 
-      setUser(user);
-      api.defaults.headers.Authorization = `Bearer ${token}`;
+      // API returns token and user data at the root level of the response object
+      // derived from AuthResponse interface in authService
+      const { token } = data;
 
-      await AsyncStorage.setItem('@BlogSchool:user', JSON.stringify(user));
-      await AsyncStorage.setItem('@BlogSchool:token', token);
+      const userToStore: User = {
+        id: data.id,
+        name: data.name,
+        email: data.email,
+        role: data.role,
+      };
 
-      return null;
-    } catch (error: any) {
-      console.error(error);
-      return error.response?.data?.message || 'Erro ao realizar cadastro';
-    }
-  }
-
-  async function signIn(email: string, password: string): Promise<string | null> {
-    try {
-      const response = await api.post('/login', { email, password });
-      const { user, token } = response.data;
-
-      setUser(user);
+      setUser(userToStore);
 
       api.defaults.headers.Authorization = `Bearer ${token}`;
 
-      await AsyncStorage.setItem('@BlogSchool:user', JSON.stringify(user));
+      await AsyncStorage.setItem('@BlogSchool:user', JSON.stringify(userToStore));
       await AsyncStorage.setItem('@BlogSchool:token', token);
 
       return null; // No error
     } catch (error: any) {
       console.error(error);
-      return error.response?.data?.message || 'Erro ao realizar login';
+      return error.response?.data?.message || 'Erro ao realizar login. Verifique suas credenciais.';
     }
   }
 
   async function signOut() {
     await AsyncStorage.clear();
     setUser(null);
+    // Limpar o header de autorização
+    delete api.defaults.headers.Authorization;
   }
 
   return (
-    <AuthContext.Provider value={{ signed: !!user, user, loading, signIn, signOut, signUp }}>
+    <AuthContext.Provider value={{ signed: !!user, user, loading, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );

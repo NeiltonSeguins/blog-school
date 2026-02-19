@@ -10,8 +10,7 @@ export default function ProfileScreen() {
   const navigation = useNavigation<StackNavigationProp<any>>();
 
   function handleEdit() {
-    const userType = user?.role === 'professor' ? 'teacher' : 'student';
-    navigation.navigate('UserForm', { id: user?.id, userType });
+    navigation.navigate('UserForm', { id: user?.id, userType: 'teacher' });
   }
 
   return (
@@ -26,9 +25,9 @@ export default function ProfileScreen() {
         <Text style={styles.value}>{user?.email || 'email@exemplo.com'}</Text>
 
         <Text style={styles.label}>Tipo:</Text>
-        <Text style={styles.value}>{user?.role === 'professor' ? 'Professor' : 'Aluno'}</Text>
+        <Text style={styles.value}>{user?.role === 'teacher' ? 'Professor' : 'Aluno'}</Text>
 
-        {user?.subject && user.role === 'professor' && (
+        {user?.subject && user.role === 'teacher' && (
           <>
             <Text style={styles.label}>Disciplina:</Text>
             <Text style={styles.value}>{user.subject}</Text>
@@ -43,9 +42,11 @@ export default function ProfileScreen() {
         )}
       </View>
 
-      <TouchableOpacity style={styles.editButton} onPress={handleEdit}>
-        <Text style={styles.editButtonText}>Editar Informações</Text>
-      </TouchableOpacity>
+      {user?.role === 'teacher' && (
+        <TouchableOpacity style={styles.editButton} onPress={handleEdit}>
+          <Text style={styles.editButtonText}>Editar Informações</Text>
+        </TouchableOpacity>
+      )}
 
       <TouchableOpacity onPress={signOut} style={styles.logoutButton}>
         <Text style={styles.logoutText}>Sair da Conta</Text>

@@ -7,7 +7,6 @@ import { colors } from '../theme';
 
 // Screens
 import LoginScreen from '../screens/Auth/LoginScreen';
-import RegisterScreen from '../screens/Auth/RegisterScreen';
 import PostsListScreen from '../screens/Posts/PostsListScreen';
 import PostFormScreen from '../screens/Posts/PostFormScreen';
 import PostDetailScreen from '../screens/Posts/PostDetailScreen';
@@ -34,8 +33,8 @@ export type PostStackParamList = {
 
 export type TabParamList = {
   HomeTab: undefined;
-  Teachers: { role: 'professor' };
-  Students: { role: 'aluno' };
+  Teachers: { role: 'teacher' };
+  Students: { role: 'student' };
   Profile: undefined;
 };
 
@@ -96,18 +95,20 @@ function MainTabs() {
         options={{ title: 'Home' }}
       />
 
-      <Tab.Screen
-        name="Teachers"
-        component={UsersListScreen}
-        initialParams={{ role: 'professor' }}
-        options={{ title: user?.role === 'professor' ? 'Lista de Professores' : 'Professores' }}
-      />
+      {user?.role === 'teacher' && (
+        <Tab.Screen
+          name="Teachers"
+          component={UsersListScreen}
+          initialParams={{ role: 'teacher' }}
+          options={{ title: 'Lista de Professores' }}
+        />
+      )}
 
-      {user?.role === 'professor' && (
+      {user?.role === 'teacher' && (
         <Tab.Screen
           name="Students"
           component={UsersListScreen}
-          initialParams={{ role: 'aluno' }}
+          initialParams={{ role: 'student' }}
           options={{ title: 'Lista de Alunos' }}
         />
       )}
@@ -126,7 +127,6 @@ function AuthStack() {
   return (
     <AuthStackDef.Navigator id="AuthStack" screenOptions={{ headerShown: false }}>
       <AuthStackDef.Screen name="Login" component={LoginScreen} />
-      <AuthStackDef.Screen name="Register" component={RegisterScreen} />
     </AuthStackDef.Navigator>
   );
 }
